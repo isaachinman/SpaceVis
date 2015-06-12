@@ -1,0 +1,92 @@
+<!-- PROTOTYPE DATA VISUALISATION APP: ISAAC HINMAN 2015 -->
+
+<!doctype html>
+<html lang="en" data-ng-app="prototype">
+<head>
+
+<!-- LOAD JQUERY -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<!-- END LOAD JQUERY -->
+
+<!-- LOAD BOOTSTRAP -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<!-- END LOAD BOOTSTRAP -->
+
+<!-- LOAD ANGULAR -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0rc1/angular-route.min.js"></script>
+<!-- END LOAD ANGULAR -->
+
+<!-- LOAD THREEJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+<!-- END LOAD THREEJS -->
+
+<!-- MAIN APP SCRIPT -->
+<script src="js/app.js"></script>
+<!-- END MAIN APP SCRIPT -->
+
+<!-- SEARCH AUTOCOMPLETE -->
+<link rel="stylesheet" href="css/jquery-ui.min.css">
+<script src="js/jquery-ui.min.js"></script>
+<!-- END SEARCH AUTOCOMPLETE -->
+
+</head>
+
+<body data-ng-controller="mainController">
+
+<!-- NAVBAR -->
+<nav id="nav" class="navbar navbar-default">
+<div class="container-fluid">
+
+<div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nav-collapse">
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    </button>
+    <div class="navbar-brand">SpaceVis</div>
+</div>
+
+<div class="collapse navbar-collapse" id="nav-collapse">
+    <ul class="nav navbar-nav">
+        <li class="active"><a href="#/">Home</a></li>
+        <li><a href="#/torus">Page 2</a></li>
+        <li><a href="#/cylinder">Page 3</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li><a href="#/info">Information</a></li>
+    </ul>
+</div><!-- .navbar-collapse -->
+</div><!-- .container-fluid -->
+</nav>
+<!-- END NAVBAR -->
+
+<!-- MAIN CONTENT -->
+
+<div id="main">
+
+<!-- CREATE MAIN RENDERER AND PORT IT INTO EXISTING CANVAS ELEMENT -->
+<script>
+var renderer = new THREE.WebGLRenderer({ alpha: true, canvas: canvas });
+var canvas = document.getElementById("canvas-container");
+</script>
+<!-- END CREATE MAIN RENDERER AND PORT IT INTO EXISTING CANVAS ELEMENT -->
+
+<div data-ng-view></div>
+
+</div><!-- #main -->
+
+<!-- END MAIN CONTENT -->
+
+<!-- MAKE NAV ELEMENTS ACTIVE -->
+<script>
+$("#nav a").on("click", function(){
+$("#nav").find(".active").removeClass("active");
+$(this).parent().addClass("active");
+});
+</script>
+<!-- END MAKE NAV ELEMENTS ACTIVE -->
+
+</body>
+</html>
