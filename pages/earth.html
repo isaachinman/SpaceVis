@@ -1,0 +1,160 @@
+<!-- CYLINDER PAGE -->
+
+<div class="container">
+
+<div class="row">
+
+<div class="span12 text-center" style="align-items:center;">
+
+    <div id="earth" class="rounded-corners" style="margin-top:10vh">
+
+        <div id="satelliteImageContainer" class="rounded-corners hidden" style="width:100%;height:100%;position:absolute;z-index:1;">
+
+            <img id="satelliteImage" class="rounded-corners" style="height:100%;width:auto;" src="">
+
+        </div><!-- end satelliteImage -->
+
+        <button onclick="getSatelliteImage();" style="position:absolute;z-index:2;top:2.5vw;left:2.5vw;">Get Image</button>
+
+        <button onclick="clearImage();" style="position:absolute;z-index:2;top:2.5vw;right:2.5vw;">Clear Image</button>
+
+    </div><!-- end earth -->
+
+    <div id="imageInfo" class="hidden">
+
+        Latitude: <span id="imageLatitude"></span><br>
+
+        Longitude: <span id="imageLongitude"></span><br>
+
+        Date taken: <span id="dateTaken"></span>
+
+    </div><!-- end imageInfo -->
+
+</div><!-- end span12 -->
+
+</div><!-- end row -->
+
+</div><!-- end container -->
+
+<script>
+
+/*
+// PUT RENDERER INTO EXISTING CANVAS ELEMENT
+document.body.appendChild( renderer.domElement );
+document.getElementById("canvas-container").appendChild(renderer.domElement);
+
+// EARTH ROTATION
+var earthRotationY = .005;
+
+// GET WIDTH AND HEIGHT
+var width = (window.innerWidth * 0.8);
+var height = (window.innerHeight * 0.8);
+
+// CREATE SCENE
+var earthScene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 1000 );
+renderer.setSize( width / height );
+
+// POSITION THE CAMERA
+camera.position.z = 5;
+
+// CREATE VARIOUS LIGHTING ELEMENTS
+var light = new THREE.AmbientLight( 0x454545 ); // soft white light
+earthScene.add( light );
+directionalLight = new THREE.DirectionalLight( 0xffffff, 2.0 );
+directionalLight.position.set( 1, 1, 0.5 ).normalize();
+earthScene.add( directionalLight );
+pointLight = new THREE.PointLight( 0xffaa00 );
+pointLight.position.set( 0, 0, 0 );
+earthScene.add( pointLight );
+
+// CREATE THE EARTH
+var earthGeometry   = new THREE.SphereGeometry(1.5, 32, 32)
+var earthMaterial  = new THREE.MeshPhongMaterial()
+window.earth = new THREE.Mesh(earthGeometry, earthMaterial)
+earthScene.add(window.earth)
+
+// CALL RENDERER
+function render() {
+    earthRender = requestAnimationFrame( render );
+    renderer.setSize( width, height );
+    window.earth.rotation.y += earthRotationY;
+    renderer.render( earthScene, camera );
+}
+render();
+*/
+</script>
+
+
+<script>
+
+function initialiseEarth() {
+
+    window.earth = new WE.map('earth');
+    WE.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(window.earth);
+}
+
+$(document).ready(function() {
+    initialiseEarth();
+});
+
+function getSatelliteImage() {
+
+    // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
+    var locationArray = window.earth.getCenter();
+    var requestedLatitude = locationArray[0];
+    var requestedLongitude = locationArray[1];
+    console.log(requestedLatitude,requestedLongitude);
+
+
+    // SET UP XML SEARCH REQUEST
+    var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + requestedLongitude + "&lat=" + requestedLatitude + "&cloud score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+    var searchXml = new XMLHttpRequest();
+    searchXml.open('GET', searchUrl, true);
+
+    // SEND XML SEARCH REQUEST
+    searchXml.send(null);
+
+    // WHEN REQUEST IS READY, PARSE RESULTS
+    searchXml.onreadystatechange=function() {
+        if (searchXml.readyState==4 && searchXml.status==200) {
+            var requestedLocation = JSON.parse(searchXml.responseText);
+            document.getElementById('satelliteImage').src = requestedLocation.url;
+            $("#satelliteImageContainer").removeClass('hidden');
+            document.getElementById('dateTaken').innerHTML = requestedLocation.date;
+            document.getElementById('imageLatitude').innerHTML = requestedLatitude;
+            document.getElementById('imageLongitude').innerHTML = requestedLongitude;
+            $("#imageInfo").removeClass('hidden');
+            console.log(requestedLocation);
+        }
+    }
+}
+
+function clearImage() {
+    $('#satelliteImage').empty();
+    $('#dateTaken').empty();
+    $('#imageLatitude').empty();
+    $('#imageLongitude').empty();
+    $('#satelliteImageContainer').addClass('hidden');
+    $('#imageInfo').addClass('hidden');
+}
+
+
+function fizzBuzz() {
+    for (i = 1; i < 101; ++i) {
+    if ((i % 5 === 0) && (i % 3 === 0)) {
+        console.log('fizz buzz');
+    } else if (i % 3 === 0) {
+        console.log('fizz');
+    } else if (i % 5 === 0) {
+        console.log('buzz');
+    } else {
+        console.log(i);
+    }
+}
+}
+
+</script>
+

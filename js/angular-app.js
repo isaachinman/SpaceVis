@@ -11,12 +11,12 @@ var prototype = angular.module('prototype', ['ngRoute']);
 prototype.config(function($routeProvider, $locationProvider) {
     $routeProvider
 
-        /* ROUTE FOR MAIN PAGE */
+        /* ROUTE FOR STAR-FINDER PAGE */
         .when('/', {
-            templateUrl : 'pages/main.html',
-            controller  : 'mainController'
+            templateUrl : 'pages/star-finder.html',
+            controller  : 'starFinderController'
         })
-        /* END ROUTE FOR MAIN PAGE */
+        /* END ROUTE FOR STAR-FINDER PAGE */
 
         /* ROUTE FOR TORUS PAGE */
         .when('/torus', {
@@ -25,12 +25,12 @@ prototype.config(function($routeProvider, $locationProvider) {
         })
         /* END ROUTE FOR TORUS PAGE */
 
-        /* ROUTE FOR CYLINDER PAGE */
-        .when('/cylinder', {
-            templateUrl : 'pages/cylinder.html',
-            controller  : 'cylinderController'
+        /* ROUTE FOR EARTH PAGE */
+        .when('/earth', {
+            templateUrl : 'pages/earth.html',
+            controller  : 'earthController'
         })
-        /* END ROUTE FOR CYLINDER PAGE */
+        /* END ROUTE FOR EARTH PAGE */
 
         /* ROUTE FOR INFO PAGE */
         .when('/info', {
@@ -43,7 +43,7 @@ prototype.config(function($routeProvider, $locationProvider) {
 /* END CONFIGURE ROUTES */
 
 /* MAIN CONTROLLER */
-prototype.controller('mainController', function($scope) {
+prototype.controller('starFinderController', function($scope) {
 
 });
 /* END MAIN CONTROLLER */
@@ -55,7 +55,7 @@ prototype.controller('torusController', function($scope) {
 /* END TORUS CONTROLLER */
 
 /* CYLINDER CONTROLLER */
-prototype.controller('cylinderController', function($scope) {
+prototype.controller('earthController', function($scope) {
 
 });
 /*END CYLINDER CONTROLLER */

@@ -1,0 +1,15 @@
+/* SPACEVIS 2015 - ISAAC HINMAN */
+/********************************
+********** MAIN CSS *************
+********************************/
+
+.rounded-corners {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.hidden {
+    display: none;
+}
