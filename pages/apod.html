@@ -1,0 +1,162 @@
+<!-- APOD PAGE -->
+
+<div class="container">
+
+<div class="row">
+
+<div class="span12 text-center">
+
+    <button onclick="generateNewSlides();">More Slides</button>
+
+    <div data-ng-controller="apodController" data-ng-init="load();"></div>
+
+    <div id="apodContainer">
+        <ul id="lightSlider">
+            <li><img id="apod1" class="rounded-corners apod-image"></li>
+            <li><img id="apod2" class="rounded-corners apod-image"></li>
+            <li><img id="apod3" class="rounded-corners apod-image"></li>
+            <li><img id="apod4" class="rounded-corners apod-image"></li>
+            <li><img id="apod5" class="rounded-corners apod-image"></li>
+            <li><img id="apod6" class="rounded-corners apod-image"></li>
+            <li><img id="apod7" class="rounded-corners apod-image"></li>
+            <li><img id="apod8" class="rounded-corners apod-image"></li>
+            <li><img id="apod9" class="rounded-corners apod-image"></li>
+            <li><img id="apod10" class="rounded-corners apod-image"></li>
+        </ul><!-- end slides-->
+    </div><!-- end apodContainer -->
+
+    </div><!-- end infoContainer -->
+
+</div><!-- end span12 -->
+
+</div><!-- end row -->
+
+</div><!-- end container -->
+
+<script>
+
+////////////////////////////////
+////// GET APOD FOR TODAY //////
+////////////////////////////////
+    var firstSlideFunction = function() {
+        var deferred = $.Deferred();
+        // APOD1 XML REQUEST
+        var apod1Url = "https://api.nasa.gov/planetary/apod?concept_tags=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+        var apod1Xml = new XMLHttpRequest();
+        apod1Xml.open('GET', apod1Url, true);
+        apod1Xml.send(null);
+
+        // APOD1 URL FETCH AND IMAGE RENDER
+        apod1Xml.onreadystatechange=function() {
+            if (apod1Xml.readyState==4 && apod1Xml.status==200) {
+                var apod1Parse = JSON.parse(apod1Xml.responseText);
+                document.getElementById('apod1').src = apod1Parse.url;
+                $('#infoContainer').removeClass('hidden');
+                console.log(apod1Parse);
+            }
+        }
+        deferred.resolve();
+        return deferred;
+    }
+
+/////////////////////////////////
+// GET APODS FOR PREVIOUS DAYS //
+/////////////////////////////////
+    var otherSlideFunction = function() {
+        window.imgIds = [ 'apod2', 'apod3', 'apod4', 'apod5', 'apod6', 'apod7', 'apod8', 'apod9', 'apod10' ];
+        for (var i = 0; i < window.imgIds.length; i++) {
+            (function(id) {
+
+                // GENERATE DATE
+                var date = new Date();
+                date.setDate(date.getDate() - i);
+                var day = date.getDate();
+                var month = date.getMonth();
+                var year = date.getFullYear();
+                console.log(year + "-" + month + "-" + day);
+
+                // GENERATE XML REQUEST
+                var apodUrl = "https://api.nasa.gov/planetary/apod?concept_tags=True&date=" + year + "-" + month + "-" + day + "&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+                var apodXml = new XMLHttpRequest();
+                apodXml.open('GET', apodUrl, true);
+                apodXml.send(null);
+
+                // WHEN REQUEST IS READY, ADD IMG SRC
+                apodXml.onreadystatechange=function() {
+                    if (apodXml.readyState==4 && apodXml.status==200) {
+                        var apodParse = JSON.parse(apodXml.responseText);
+                        document.getElementById(id).src = apodParse.url;
+                        console.log(apodParse.url);
+                    }
+                }
+            })(window.imgIds[i]);
+        }
+    }
+
+// CALL BOTH SLIDE FUNCTIONS
+firstSlideFunction().done(otherSlideFunction);
+
+////////////////////////////////////
+// GENERATE MORE SLIDES AS NEEDED //
+////////////////////////////////////
+
+    function generateNewSlides() {
+
+        var currentSlideCount = window.imgIds.length;
+
+        for (var i = 11; i < (currentSlideCount + 10); i++) {
+
+        // SET UP NEW SLIDE HTML
+        var newSlide = '<li><img id="apod' + i + '" class="rounded-corners apod-image"></li>';
+        $('#lightSlider').append(newSlide);
+        window.imgIds.push('apod'+i);
+        console.log(window.imgIds);
+
+        // GENERATE DATE
+        var date = new Date();
+        date.setDate(date.getDate() - i);
+        var day = date.getDate();
+        var month = date.getMonth();
+        var year = date.getFullYear();
+        console.log(year + "-" + month + "-" + day);
+
+        // GENERATE XML REQUEST
+        function foo(callback) {
+            var apodUrl = "https://api.nasa.gov/planetary/apod?concept_tags=True&date=" + year + "-" + month + "-" + day + "&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+            var apodXml = new XMLHttpRequest();
+            apodXml.open('GET', apodUrl, true);
+            apodXml.send(null);
+
+
+
+            // WHEN REQUEST IS READY, ADD IMG SRC
+            apodXml.onreadystatechange=function() {
+                if (apodXml.readyState==4 && apodXml.status==200) {
+                    var apodParse = JSON.parse(apodXml.responseText);
+                    callback(apodParse.url)
+                    console.log(apodParse.url);
+                }
+            }
+        }
+
+        foo(
+            (function(i) {
+                return function(result) {
+                var newSlideId = 'apod' + i;
+                document.getElementById(newSlideId).src = result;
+                }
+            })(i)
+        );
+
+
+
+
+
+        }
+    }
+
+
+
+
+
+</script>

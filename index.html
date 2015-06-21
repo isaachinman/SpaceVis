@@ -43,6 +43,10 @@
 <link rel="stylesheet" href="css/leaflet-search.mobile.css">
 <!-- END LOAD GEOSEARCH PLUGIN -->
 
+<!-- LOAD PHOTO SLIDER -->
+<script src="js/lightslider.js"></script>
+<!-- END LOAD PHOTO SLIDER -->
+
 <!-- MAIN APP SCRIPT -->
 <script src="js/angular-app.js"></script>
 <!-- END MAIN APP SCRIPT -->
@@ -54,7 +58,7 @@
 
 </head>
 
-<body data-ng-controller="starFinderController">
+<body>
 
 <!-- NAVBAR -->
 <nav id="nav" class="navbar navbar-default">
@@ -69,11 +73,11 @@
     <div class="navbar-brand">SpaceVis</div>
 </div>
 
-<div class="collapse navbar-collapse" id="nav-collapse">
+<div class="collapse navbar-collapse" id="nav-collapse" data-ng-controller="navController">
     <ul class="nav navbar-nav">
-        <li class="active"><a href="#/">Home</a></li>
-        <li><a href="#/earth" onclick="clearScene();">Page 2</a></li>
-        <li><a href="#/torus">Page 3</a></li>
+        <li data-ng-class="{active:isActive('/')}"><a href="#/">StarFinder</a></li>
+        <li data-ng-class="{active:isActive('/earth')}"><a href="#/earth" onclick="clearScene();">Landsat</a></li>
+        <li data-ng-class="{active:isActive('/apod')}"><a href="#/apod">APOD</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
         <li><a href="#/info">Information</a></li>
@@ -102,10 +106,14 @@ var canvas = document.getElementById("canvas-container");
 
 <!-- MAKE NAV ELEMENTS ACTIVE -->
 <script>
+/*
 $("#nav a").on("click", function(){
 $("#nav").find(".active").removeClass("active");
 $(this).parent().addClass("active");
 });
+*/
+
+
 </script>
 <!-- END MAKE NAV ELEMENTS ACTIVE -->
 

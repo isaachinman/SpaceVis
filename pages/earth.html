@@ -88,18 +88,20 @@ render();
 
 <script>
 
+// CREATE 3D EARTH AND GIVE IT A TILELAYER
 function initialiseEarth() {
-
     window.earth = new WE.map('earth');
     WE.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
         attribution: '© OpenStreetMap contributors'
     }).addTo(window.earth);
 }
 
+// INITIALISE EARTH WHEN DOM HAS LOADED
 $(document).ready(function() {
     initialiseEarth();
 });
 
+// FETCH CURRENT LAT/LONG AND RETRIEVE MOST RECENT LANDSAT IMAGE
 function getSatelliteImage() {
 
     // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
@@ -132,6 +134,7 @@ function getSatelliteImage() {
     }
 }
 
+// REMOVE ALL INFO ATTRIBUTES AND CLEAR IMAGE URL
 function clearImage() {
     $('#satelliteImage').empty();
     $('#dateTaken').empty();

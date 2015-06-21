@@ -1,36 +1,38 @@
 /* PROTOTYPE DATA VISUALISATION APP: ISAAC HINMAN 2015 */
 
 /* CREATE MODULE */
-var prototype = angular.module('prototype', ['ngRoute']);
+var spaceVis = angular.module('prototype', ['ngRoute']);
 /* END CREATE MODULE */
 
 /* CREATE FACTORY TO PORT RENDERER INTO CONTROLLERS */
 
 
 /* CONFIGURE ROUTES */
-prototype.config(function($routeProvider, $locationProvider) {
+spaceVis.config(function($routeProvider, $locationProvider) {
     $routeProvider
 
         /* ROUTE FOR STAR-FINDER PAGE */
         .when('/', {
             templateUrl : 'pages/star-finder.html',
-            controller  : 'starFinderController'
+            controller  : 'starFinderController',
+            activetab: 'home'
         })
         /* END ROUTE FOR STAR-FINDER PAGE */
-
-        /* ROUTE FOR TORUS PAGE */
-        .when('/torus', {
-            templateUrl : 'pages/torus.html',
-            controller  : 'torusController'
-        })
-        /* END ROUTE FOR TORUS PAGE */
 
         /* ROUTE FOR EARTH PAGE */
         .when('/earth', {
             templateUrl : 'pages/earth.html',
-            controller  : 'earthController'
+            controller  : 'earthController',
+            activetab: 'earth'
         })
         /* END ROUTE FOR EARTH PAGE */
+
+        /* ROUTE FOR APOD PAGE */
+        .when('/apod', {
+            templateUrl : 'pages/apod.html',
+            controller  : 'apodController'
+        })
+        /* END ROUTE FOR APOD PAGE */
 
         /* ROUTE FOR INFO PAGE */
         .when('/info', {
@@ -43,26 +45,49 @@ prototype.config(function($routeProvider, $locationProvider) {
 /* END CONFIGURE ROUTES */
 
 /* MAIN CONTROLLER */
-prototype.controller('starFinderController', function($scope) {
-
+spaceVis.controller('starFinderController', function($scope) {
 });
 /* END MAIN CONTROLLER */
 
-/* TORUS CONTROLLER */
-prototype.controller('torusController', function($scope) {
+/* EARTH CONTROLLER */
+spaceVis.controller('earthController', function($scope) {
+});
+/*END EARTH CONTROLLER */
+
+/* APOD CONTROLLER */
+spaceVis.controller('apodController', function($scope) {
+
+    $scope.load = function() {
+
+        $("#lightSlider").lightSlider({
+            item: 1,
+            adaptiveHeight: true,
+            enableTouch: true,
+            enableDrag: true,
+            loop: false,
+            speed: 200,
+            keyPress: true,
+            slideMargin: 0
+
+        });
+
+        $('#lightSlider').onAfterSlide.refresh;
+
+    }
 
 });
-/* END TORUS CONTROLLER */
-
-/* CYLINDER CONTROLLER */
-prototype.controller('earthController', function($scope) {
-
-});
-/*END CYLINDER CONTROLLER */
+/* END APOD CONTROLLER */
 
 /* INFO CONTROLLER */
-prototype.controller('infoController', function($scope) {
+spaceVis.controller('infoController', function($scope) {
 
 });
 /* END INFO CONTROLLER */
 
+/* NAV CONTROLLER */
+spaceVis.controller('navController', function($scope, $location) {
+    $scope.isActive = function(route) {
+        return route === $location.path();
+    }
+});
+/* END NAV CONTROLLER */
