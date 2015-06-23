@@ -38,57 +38,7 @@
 
 <script>
 
-/*
-// PUT RENDERER INTO EXISTING CANVAS ELEMENT
-document.body.appendChild( renderer.domElement );
-document.getElementById("canvas-container").appendChild(renderer.domElement);
-
-// EARTH ROTATION
-var earthRotationY = .005;
-
-// GET WIDTH AND HEIGHT
-var width = (window.innerWidth * 0.8);
-var height = (window.innerHeight * 0.8);
-
-// CREATE SCENE
-var earthScene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 1000 );
-renderer.setSize( width / height );
-
-// POSITION THE CAMERA
-camera.position.z = 5;
-
-// CREATE VARIOUS LIGHTING ELEMENTS
-var light = new THREE.AmbientLight( 0x454545 ); // soft white light
-earthScene.add( light );
-directionalLight = new THREE.DirectionalLight( 0xffffff, 2.0 );
-directionalLight.position.set( 1, 1, 0.5 ).normalize();
-earthScene.add( directionalLight );
-pointLight = new THREE.PointLight( 0xffaa00 );
-pointLight.position.set( 0, 0, 0 );
-earthScene.add( pointLight );
-
-// CREATE THE EARTH
-var earthGeometry   = new THREE.SphereGeometry(1.5, 32, 32)
-var earthMaterial  = new THREE.MeshPhongMaterial()
-window.earth = new THREE.Mesh(earthGeometry, earthMaterial)
-earthScene.add(window.earth)
-
-// CALL RENDERER
-function render() {
-    earthRender = requestAnimationFrame( render );
-    renderer.setSize( width, height );
-    window.earth.rotation.y += earthRotationY;
-    renderer.render( earthScene, camera );
-}
-render();
-*/
-</script>
-
-
-<script>
-
-// CREATE 3D EARTH AND GIVE IT A TILELAYER
+        // CREATE 3D EARTH AND GIVE IT A TILELAYER
 function initialiseEarth() {
     window.earth = new WE.map('earth');
     WE.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -145,19 +95,23 @@ function clearImage() {
 }
 
 
+
+
 function fizzBuzz() {
     for (i = 1; i < 101; ++i) {
-    if ((i % 5 === 0) && (i % 3 === 0)) {
-        console.log('fizz buzz');
-    } else if (i % 3 === 0) {
-        console.log('fizz');
-    } else if (i % 5 === 0) {
-        console.log('buzz');
-    } else {
-        console.log(i);
+        if ((i % 5 === 0) && (i % 3 === 0)) {
+            console.log('fizz buzz');
+        } else if (i % 3 === 0) {
+            console.log('fizz');
+        } else if (i % 5 === 0) {
+            console.log('buzz');
+        } else {
+            console.log(i);
+        }
     }
 }
-}
+
+
 
 </script>
 
