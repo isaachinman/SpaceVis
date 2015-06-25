@@ -209,12 +209,12 @@ pointLight.position.set( 0, 0, 0 );
 starScene.add( pointLight );
 
 // SET UP XML DATABASE REQUEST
-var databaseUrl = 'https://data.nasa.gov/resource/5bv2-dyn2';
+var databaseUrl = 'http://star-api.herokuapp.com/api/v1/stars';
 var databaseXml = new XMLHttpRequest();
 databaseXml.open('GET', databaseUrl, true);
 
 // PUT APP TOKEN INTO HEADER
-databaseXml.setRequestHeader('X-App-Token', 'Bi2coYHtAa9AScPW7tsCWvTBx');
+
 
 // SEND XML DATABASE REQUEST
 databaseXml.send(null);
@@ -242,12 +242,12 @@ function searchRequest() {
     searchTerm = document.getElementById('search-box').value;
 
     // SET UP XML SEARCH REQUEST
-    var searchUrl = 'https://data.nasa.gov/resource/5bv2-dyn2?label=' + searchTerm;
+    var searchUrl = 'http://star-api.herokuapp.com/api/v1/stars/' + searchTerm;
     var searchXml = new XMLHttpRequest();
     searchXml.open('GET', searchUrl, true);
 
     // PUT APP TOKEN INTO HEADER
-    searchXml.setRequestHeader('X-App-Token', 'Bi2coYHtAa9AScPW7tsCWvTBx');
+
 
     // SEND XML SEARCH REQUEST
     searchXml.send(null);
@@ -256,14 +256,14 @@ function searchRequest() {
     searchXml.onreadystatechange=function() {
         if (searchXml.readyState==4 && searchXml.status==200) {
             window.specificStar = JSON.parse(searchXml.responseText);
-            document.getElementById('object-name').innerHTML = window.specificStar[0].label;
-            document.getElementById('luminosity').innerHTML = window.specificStar[0].luminosity;
-            document.getElementById('distance').innerHTML = window.specificStar[0].distance_light_years + ' light years';
-            document.getElementById('colour').innerHTML = window.specificStar[0].colorb_v;
-            document.getElementById('temp').innerHTML = '~' + calculateTemp(window.specificStar[0].colorb_v) + 'K';
+            document.getElementById('object-name').innerHTML = window.specificStar.label;
+            document.getElementById('luminosity').innerHTML = window.specificStar.lum;
+            document.getElementById('distance').innerHTML = window.specificStar.distly + ' light years';
+            document.getElementById('colour').innerHTML = window.specificStar.colorb_v;
+            document.getElementById('temp').innerHTML = '~' + calculateTemp(window.specificStar.colorb_v) + 'K';
 
             // IF STAR IS THE SUN, GET TEXTURE, ELSE SMOOTH MESH
-            if (window.specificStar[0].label === "Sun") {
+            if (window.specificStar.label === "Sun") {
                 var sunTexture = THREE.ImageUtils.loadTexture( "images/sun.jpg" );
                 sunTexture.wrapS = THREE.ClampToEdgeWrapping;
                 sunTexture.wrapT = THREE.ClampToEdgeWrapping;
@@ -272,25 +272,25 @@ function searchRequest() {
                 var starMaterial = new THREE.MeshBasicMaterial ( {map: sunTexture} );
             } else {
                 // SET STAR COLOUR BASED ON FETCHED VALUE
-                var starColor = valueToRgbColor(window.specificStar[0].colorb_v);
+                var starColor = valueToRgbColor(window.specificStar.colorb_v);
                 var starMaterial = new THREE.MeshLambertMaterial ( {color: starColor} );
             }
 
             // ADD TEXT LABEL TO COLOUR
-            if (window.specificStar[0].colorb_v >= -.63 && window.specificStar[0].colorb_v < 0) {
+            if (window.specificStar.colorb_v >= -.63 && window.specificStar.colorb_v < 0) {
                     document.getElementById('colour').innerHTML += " (Blue)";
                 }
-                  else if (window.specificStar[0].colorb_v >= 0 && window.specificStar[0].colorb_v < .165) {
+                  else if (window.specificStar.colorb_v >= 0 && window.specificStar.colorb_v < .165) {
                     document.getElementById('colour').innerHTML += " (Blueish White)";
-                } else if (window.specificStar[0].colorb_v >= .165 && window.specificStar[0].colorb_v < .33) {
+                } else if (window.specificStar.colorb_v >= .165 && window.specificStar.colorb_v < .33) {
                     document.getElementById('colour').innerHTML += " (White)";
-                } else if (window.specificStar[0].colorb_v >= .33 && window.specificStar[0].colorb_v < .495) {
+                } else if (window.specificStar.colorb_v >= .33 && window.specificStar.colorb_v < .495) {
                     document.getElementById('colour').innerHTML += " (Yellowish White)";
-                } else if (window.specificStar[0].colorb_v >= .495 && window.specificStar[0].colorb_v < .66) {
+                } else if (window.specificStar.colorb_v >= .495 && window.specificStar.colorb_v < .66) {
                     document.getElementById('colour').innerHTML += " (Yellow)";
-                } else if (window.specificStar[0].colorb_v >= .66 && window.specificStar[0].colorb_v < .825) {
+                } else if (window.specificStar.colorb_v >= .66 && window.specificStar.colorb_v < .825) {
                     document.getElementById('colour').innerHTML += " (Orange)";
-                } else if (window.specificStar[0].colorb_v >= .825 && window.specificStar[0].colorb_v <= 2.057) {
+                } else if (window.specificStar.colorb_v >= .825 && window.specificStar.colorb_v <= 2.057) {
                     document.getElementById('colour').innerHTML += " (Red)";
                 }
 

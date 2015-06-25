@@ -69,49 +69,14 @@ spaceVis.controller('apodController', function($scope) {
         // MONTH NAMES
         var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-        /////////////////////////////////
-        //////// GET INTIAL APODS ///////
-        /////////////////////////////////
-            function slideFunction() {
-                window.imgIds = [ 'apod1', 'apod2', 'apod3', 'apod4', 'apod5', 'apod6', 'apod7', 'apod8', 'apod9', 'apod10' ];
-                for (var i = 0; i < window.imgIds.length; i++) {
-                    (function(id) {
-
-                        // GENERATE DATE
-                        var date = new Date();
-                        date.setDate(date.getDate() - i);
-                        var day = date.getDate();
-                        var month = ("0" + (date.getMonth() +1)).slice(-2);
-                        var monthName = date.getMonth();
-                        console.log(month);
-                        var year = date.getFullYear();
-
-                        // GENERATE XML REQUEST
-                        var apodUrl = "https://api.nasa.gov/planetary/apod?concept_tags=True&date=" + year + "-" + month + "-" + day + "&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
-                        console.log("https://api.nasa.gov/planetary/apod?concept_tags=True&date=" + year + "-" + month + "-" + day + "&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R");
-                        var apodXml = new XMLHttpRequest();
-                        apodXml.open('GET', apodUrl, true);
-                        apodXml.send(null);
-
-                        // WHEN REQUEST IS READY, ADD IMG SRC
-                        apodXml.onreadystatechange=function() {
-                            if (apodXml.readyState==4 && apodXml.status==200) {
-                                var apodParse = JSON.parse(apodXml.responseText);
-                                document.getElementById(id).src = apodParse.url;
-                                document.getElementById(id+"Date").innerHTML = day + " " + monthNames[monthName] + " " + year;
-                            }
-                        }
-                    })(window.imgIds[i]);
-                }
-            }
-
-        slideFunction();
+        // SLIDE ARRAY
+        window.imgIds = [];
 
         ////////////////////////////////////
-        // GENERATE MORE SLIDES AS NEEDED //
+        ////////// GENERATE SLIDES /////////
         ////////////////////////////////////
 
-            function generateNewSlides() {
+            function generateSlides() {
 
                 var stopGeneratingSlides = (window.imgIds.length + 10);
 
@@ -187,6 +152,8 @@ spaceVis.controller('apodController', function($scope) {
                 }
             }
 
+            generateSlides();
+
             // SET UP SLIDER
             window.slider = $("#lightSlider").lightSlider({
                     item: 1,
@@ -199,6 +166,10 @@ spaceVis.controller('apodController', function($scope) {
                     slideMargin: 0,
                     gallery: false,
 
+                    onSliderLoad: function (el) {
+                        document.getElementById("apodContainer").style.display = "visible";
+                    },
+
                     // AFTER EACH SLIDE TRANSITION, DO THIS
                     onAfterSlide: function (el) {
 
@@ -206,7 +177,7 @@ spaceVis.controller('apodController', function($scope) {
                         currentSlide = '#apod' + (window.imgIds.length - 3);
 
                         if ($(currentSlide).parent().hasClass("active")) {
-                            generateNewSlides();
+                            generateSlides();
                             window.slider.refresh();
                         };
 
