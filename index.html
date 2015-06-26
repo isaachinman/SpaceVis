@@ -4,6 +4,10 @@
 <html lang="en" data-ng-app="prototype">
 <head>
 
+<!-- NORMALIZE -->
+<link rel="stylesheet" src="css/normalize.css">
+<!-- END NORMALIZE -->
+
 <!-- LOAD JQUERY -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <!-- END LOAD JQUERY -->
@@ -76,7 +80,7 @@
 <div class="collapse navbar-collapse" id="nav-collapse" data-ng-controller="navController">
     <ul class="nav navbar-nav">
         <li data-ng-class="{active:isActive('/')}"><a href="#/">StarFinder</a></li>
-        <li data-ng-class="{active:isActive('/earth')}"><a href="#/earth" onclick="clearScene();">Landsat</a></li>
+        <li data-ng-class="{active:isActive('/earth')}"><a href="#/earth">Landsat</a></li>
         <li data-ng-class="{active:isActive('/apod')}"><a href="#/apod">APOD</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">

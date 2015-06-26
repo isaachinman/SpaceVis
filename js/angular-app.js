@@ -4,8 +4,6 @@
 var spaceVis = angular.module('prototype', ['ngRoute']);
 /* END CREATE MODULE */
 
-/* CREATE FACTORY TO PORT RENDERER INTO CONTROLLERS */
-
 /* CONFIGURE ROUTES */
 spaceVis.config(function($routeProvider, $locationProvider) {
     $routeProvider
@@ -47,6 +45,10 @@ spaceVis.config(function($routeProvider, $locationProvider) {
 /******************** STAR CONTROLLER ********************/
 /*********************************************************/
 spaceVis.controller('starFinderController', function($scope) {
+
+    $scope.load = function() {
+
+    }
 
 });
 /* END STAR CONTROLLER */
@@ -121,7 +123,6 @@ spaceVis.controller('apodController', function($scope) {
                                     var mediaType = result.media_type;
 
                                     function createDOM() {
-                                        console.log(mediaType);
                                         if (mediaType == "image") {
                                             document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date"></span>';
                                         } else if (mediaType == "video") {
@@ -166,8 +167,13 @@ spaceVis.controller('apodController', function($scope) {
                     slideMargin: 0,
                     gallery: false,
 
-                    onSliderLoad: function (el) {
-                        document.getElementById("apodContainer").style.display = "visible";
+                    // LOADING SEQUENCE PLACEHOLDER
+                    onBeforeStart: function (el) {
+                        $("#spinner").addClass("loader");
+                        setTimeout(function(){
+                            $("#spinner").removeClass("loader");
+                            document.getElementById('apodContainer').style.visibility = "visible"
+                        }, 3000);
                     },
 
                     // AFTER EACH SLIDE TRANSITION, DO THIS
@@ -184,7 +190,8 @@ spaceVis.controller('apodController', function($scope) {
                     },
 
                 });
-            }
+
+    }
 
 });
 /* END APOD CONTROLLER */

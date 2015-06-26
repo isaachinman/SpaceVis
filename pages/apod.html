@@ -1,22 +1,22 @@
 <!-- APOD PAGE -->
 
+<div data-ng-controller="apodController" data-ng-init="load();"></div>
+
+<div id="loader-container" class="absolute"><div id="spinner"></div></div>
+
 <div class="container">
 
 <div class="row">
 
 <div class="span12 text-center">
 
-    <div data-ng-controller="apodController" data-ng-init="load();"></div>
-
-    <div id="apodContainer">
+    <div id="apodContainer" style="visibility:hidden">
 
         <ul id="lightSlider">
 
         </ul><!-- end slides-->
 
     </div><!-- end apodContainer -->
-
-    </div><!-- end infoContainer -->
 
 </div><!-- end span12 -->
 
