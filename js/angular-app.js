@@ -31,6 +31,13 @@ spaceVis.config(function($routeProvider, $locationProvider) {
         })
         /* END ROUTE FOR APOD PAGE */
 
+        /* ROUTE FOR SKY PAGE */
+        .when('/sky', {
+            templateUrl : 'pages/sky.html',
+            controller  : 'skyController'
+        })
+        /* END ROUTE FOR SKY PAGE */
+
         /* ROUTE FOR INFO PAGE */
         .when('/info', {
             templateUrl : 'pages/info.html',
@@ -195,6 +202,20 @@ spaceVis.controller('apodController', function($scope) {
 
 });
 /* END APOD CONTROLLER */
+
+/* INFO CONTROLLER */
+spaceVis.controller('skyController', function($scope) {
+
+    $scope.load = function() {
+
+
+
+
+
+    }
+
+});
+/* END INFO CONTROLLER */
 
 /* INFO CONTROLLER */
 spaceVis.controller('infoController', function($scope) {

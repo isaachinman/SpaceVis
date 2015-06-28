@@ -32,6 +32,11 @@
 <script src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js"></script>
 <!-- END LOAD THREEJS -->
 
+<!-- SEARCH AUTOCOMPLETE -->
+<link rel="stylesheet" href="css/jquery-ui.min.css">
+<script src="js/jquery-ui.min.js"></script>
+<!-- END SEARCH AUTOCOMPLETE -->
+
 <!-- LOAD WEBGL EARTH -->
 <script src="http://www.webglearth.com/v2/api.js"></script>
 <!-- END LOAD WEBGL EARTH -->
@@ -51,14 +56,15 @@
 <script src="js/lightslider.js"></script>
 <!-- END LOAD PHOTO SLIDER -->
 
+<!-- LOAD GOOGLE MAPS API -->
+
+<script src="js/google-maps-geolocation-marker.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+<!-- END LOAD GOOGLE MAPS API -->
+
 <!-- MAIN APP SCRIPT -->
 <script src="js/angular-app.js"></script>
 <!-- END MAIN APP SCRIPT -->
-
-<!-- SEARCH AUTOCOMPLETE -->
-<link rel="stylesheet" href="css/jquery-ui.min.css">
-<script src="js/jquery-ui.min.js"></script>
-<!-- END SEARCH AUTOCOMPLETE -->
 
 </head>
 
@@ -82,6 +88,7 @@
         <li data-ng-class="{active:isActive('/')}"><a href="#/">StarFinder</a></li>
         <li data-ng-class="{active:isActive('/earth')}"><a href="#/earth">Landsat</a></li>
         <li data-ng-class="{active:isActive('/apod')}"><a href="#/apod">APOD</a></li>
+        <li data-ng-class="{active:isActive('/sky')}"><a href="#/sky">Sky</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
         <li><a href="#/info">Information</a></li>

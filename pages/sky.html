@@ -1,0 +1,164 @@
+<!-- SKY PAGE -->
+
+<div data-ng-controller="skyController" data-ng-init="load();"></div>
+
+<div id="loader-container" class="absolute"><div id="spinner"></div></div>
+
+<div class="container">
+
+<div class="row">
+
+<div class="span12 text-center">
+
+    <div id="skyContainer" class="flex-container">
+
+        <input id="pac-input"></input>
+
+        <div id="googleMap" class="rounded-corners"></div>
+
+        <div id="skyInfoContainer">
+
+            <button id="getMyLocation" onclick="getMyLocation();">Get My Location</button>
+
+            <button id="getSkyCenter" onclick="getSkyInfo();">See What's Visible</button>
+
+            <div id="skyMoreInfo" class="hidden">
+
+                <span>In the selected location, it is <span id="cloudMessage"></span>, with a cloud cover of <span id="cloudPercent"></span>%.</span><br>
+
+            </div><!-- end skyMoreInfo -->
+
+        </div>
+
+    </div><!-- end skyContainer -->
+
+</div><!-- end span12 -->
+
+</div><!-- end row -->
+
+</div><!-- end container -->
+
+<script>
+
+
+var map, GeoMarker;
+
+function initialize() {
+
+    var mapOptions = {
+        zoom: 2,
+        maxZoom: 12,
+        center: new google.maps.LatLng(0, 0),
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+
+    map = new google.maps.Map(document.getElementById('googleMap'),
+        mapOptions);
+
+// Create the search box and link it to the UI element.
+  var input = /** @type {HTMLInputElement} */ (
+    document.getElementById('pac-input'));
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+  var searchBox = new google.maps.places.SearchBox(
+    /** @type {HTMLInputElement} */
+    (input));
+
+  // Listen for the event fired when the user selects an item from the
+  // pick list. Retrieve the matching places for that item.
+  google.maps.event.addListener(searchBox, 'places_changed', function() {
+    var places = searchBox.getPlaces();
+
+    for (var i = 0, marker; marker = markers[i]; i++) {
+      marker.setMap(null);
+    }
+
+    // For each place, get the icon, place name, and location.
+    markers = [];
+    var bounds = new google.maps.LatLngBounds();
+    var place = null;
+    var viewport = null;
+    for (var i = 0; place = places[i]; i++) {
+      var image = {
+        url: place.icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(25, 25)
+      };
+
+      // Create a marker for each place.
+      var marker = new google.maps.Marker({
+        map: map,
+        icon: image,
+        title: place.name,
+        position: place.geometry.location
+      });
+      viewport = place.geometry.viewport;
+      markers.push(marker);
+
+      bounds.extend(place.geometry.location);
+    }
+    map.setCenter(bounds.getCenter());
+  });
+
+  // Bias the SearchBox results towards places that are within the bounds of the
+  // current map's viewport.
+  google.maps.event.addListener(map, 'bounds_changed', function() {
+    var bounds = map.getBounds();
+    searchBox.setBounds(bounds);
+  });
+
+}
+
+function getMyLocation() {
+
+    GeoMarker = new GeolocationMarker();
+    GeoMarker.setCircleOptions({fillColor: '#808080'});
+
+    google.maps.event.addListenerOnce(GeoMarker, 'position_changed', function() {
+        map.setCenter(this.getPosition());
+        map.fitBounds(this.getBounds());
+    });
+
+    GeoMarker.setMap(map);
+
+    if(!navigator.geolocation) {
+        alert('Your browser does not support geolocation');
+    }
+
+}
+
+initialize();
+
+function getSkyInfo() {
+
+    var currentLocation = map.getCenter();
+    var currentLocationLat = currentLocation.A;
+    var currentLocationLong = currentLocation.F;
+    console.log(currentLocationLat);
+    console.log(currentLocationLong);
+
+    var skyUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/hourly/q/" + currentLocationLat + "," + currentLocationLong + ".json";
+    var skyXML = new XMLHttpRequest();
+    skyXML.open('GET', skyUrl, true);
+    skyXML.send(null);
+
+    // WHEN REQUEST IS READY, ADD IMG SRC
+    skyXML.onreadystatechange=function() {
+        if (skyXML.readyState==4 && skyXML.status==200) {
+            var skyParse = JSON.parse(skyXML.responseText);
+            var cloudiness = skyParse.hourly_forecast[0].sky;
+            var visibilityMessage = (skyParse.hourly_forecast[0].condition).toLowerCase();
+            document.getElementById('cloudMessage').innerHTML = visibilityMessage;
+            document.getElementById('cloudPercent').innerHTML = cloudiness;
+            $('#skyMoreInfo').removeClass('hidden');
+            console.log(skyParse);
+        }
+    }
+
+}
+
+
+
+</script>
