@@ -1,34 +1,18 @@
 <!-- CYLINDER PAGE -->
 
+<div id="loader-container" class="absolute"><div id="spinner"></div></div>
+
 <div class="container">
 
 <div class="row">
 
 <div class="span12 text-center" style="align-items:center;">
 
-    <div id="earth" class="rounded-corners">
+    <div id="cesiumContainer" class="rounded-corners"></div>
 
-        <div id="satelliteImageContainer" class="rounded-corners hidden" style="width:100%;height:100%;position:absolute;z-index:1;">
+    <button id="getImages" onclick="getSatelliteImages();">Get Images</button>
 
-            <img id="satelliteImage" class="rounded-corners" style="height:100%;width:auto;" src="">
-
-        </div><!-- end satelliteImage -->
-
-        <button onclick="getSatelliteImage();" style="position:absolute;z-index:2;top:2.5vw;left:2.5vw;">Get Image</button>
-
-        <button onclick="clearImage();" style="position:absolute;z-index:2;top:2.5vw;right:2.5vw;">Clear Image</button>
-
-    </div><!-- end earth -->
-
-    <div id="imageInfo" class="hidden">
-
-        Latitude: <span id="imageLatitude"></span><br>
-
-        Longitude: <span id="imageLongitude"></span><br>
-
-        Date taken: <span id="dateTaken"></span>
-
-    </div><!-- end imageInfo -->
+    <div id="credits"></div>
 
 </div><!-- end span12 -->
 
@@ -38,12 +22,112 @@
 
 <script>
 
-        // CREATE 3D EARTH AND GIVE IT A TILELAYER
+// START LOADER
+$("#cesiumContainer").css("visibility", "hidden");
+$("#spinner").addClass("loader");
+
+setTimeout(function() {
+    $("#cesiumContainer").css("visibility", "visible");
+    $("#spinner").removeClass("loader");
+}, 500);
+
+
+// SET BING MAPS API KEY
+Cesium.BingMapsApi.defaultKey = 'AlcBeUGZSauWjGDUGdGOI_-In-0ucLbGaX8KQqk1ig8gn2Va2DmjUH_qMnxhGLu1';
+
+// CREATE VIEWER
+var earthViewer = new Cesium.Viewer('cesiumContainer', {
+
+    animation: false,
+    timeline: false,
+    fullscreenButton: false,
+    infoBox: false,
+    sceneModePicker: false,
+    selectionModePicker: false,
+    selectionIndicator: false,
+    baseLayerPicker: false,
+    timeline: false,
+    navigationHelpButton: false,
+    navigationInstructionsInitiallyVisible: false,
+    skyBox: false,
+    skyAtmosphere: false,
+    creditContainer: "credits",
+
+    contextOptions : {
+        webgl: {
+            alpha: true
+        }
+    }
+});
+
+// SET VIEWER BACKGROUND TO TRANSPARENT
+earthViewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
+
+
+// ADD IMAGERY LAYER
+var layers = earthViewer.imageryLayers;
+
+layers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+    url : 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Dell_Logo.png/1027px-Dell_Logo.png',
+    rectangle : Cesium.Rectangle.fromDegrees(-75.55550, 28.0, -27.0, 50.75)
+}));
+
+
+function getSatelliteImages() {
+    // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
+    //var locationArray = window.earth.getCenter();
+    var requestedLatitude = 36.9719;
+    var requestedLongitude = 122.0264;
+
+    for (var i=-0.25; i<=-.1; i+=0.025) {
+
+        var adjustedLatitude = (requestedLatitude + i);
+        var adjustedLongitude = (requestedLongitude + i);
+
+        // SET UP XML SEARCH REQUEST
+        var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + adjustedLongitude + "&lat=" + adjustedLatitude + "&cloud_score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+        var searchXml = new XMLHttpRequest();
+        searchXml.open('GET', searchUrl, true);
+
+        // SEND XML SEARCH REQUEST
+        searchXml.send(null);
+
+        function returnHandler(val, searchXml, adjustedLatitude, adjustedLongitude) {
+            console.log(val, searchXml);
+
+            // WHEN REQUEST IS READY, PARSE RESULTS
+            searchXml.onreadystatechange=function() {
+                if (searchXml.readyState==4 && searchXml.status==200) {
+                    var requestedLocation = JSON.parse(searchXml.responseText);
+
+                    console.log(requestedLocation.url);
+
+                    layers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+                        url : requestedLocation.url,
+                        rectangle : Cesium.Rectangle.fromDegrees((adjustedLongitude-.0125),(adjustedLatitude-.0125),(adjustedLongitude+.0125),(adjustedLatitude+.0125))
+                    }));
+                }
+            }
+        }
+        returnHandler(i, searchXml, adjustedLatitude, adjustedLongitude);
+    }
+}
+
+
+
+
+/*
+
+// CREATE 3D EARTH AND GIVE IT A TILELAYER
 function initialiseEarth() {
     window.earth = new WE.map('earth');
     WE.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
         attribution: '© OpenStreetMap contributors'
     }).addTo(window.earth);
+
+    // SET PARAMETERS
+    window.earth.setMinAltitude(10000);
+    window.earth.setMaxAltitude(100000000);
 }
 
 // INITIALISE EARTH WHEN DOM HAS LOADED
@@ -58,29 +142,43 @@ function getSatelliteImage() {
     var locationArray = window.earth.getCenter();
     var requestedLatitude = locationArray[0];
     var requestedLongitude = locationArray[1];
-    console.log(requestedLatitude,requestedLongitude);
+
+    for (var i=-0.25; i<=0.25; i+=0.025) {
+
+        // SET UP XML SEARCH REQUEST
+        var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + (requestedLongitude + i) + "&lat=" + (requestedLatitude + i) + "&cloud score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+        var searchXml = new XMLHttpRequest();
+        searchXml.open('GET', searchUrl, true);
+
+        // SEND XML SEARCH REQUEST
+        searchXml.send(null);
+
+        function returnHandler(val, searchXml) {
+            console.log(val, searchXml);
+        // WHEN REQUEST IS READY, PARSE RESULTS
+            searchXml.onreadystatechange=function() {
+                if (searchXml.readyState==4 && searchXml.status==200) {
+                    var requestedLocation = JSON.parse(searchXml.responseText);
 
 
-    // SET UP XML SEARCH REQUEST
-    var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + requestedLongitude + "&lat=" + requestedLatitude + "&cloud score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
-    var searchXml = new XMLHttpRequest();
-    searchXml.open('GET', searchUrl, true);
+                        var bounds = [[((requestedLatitude + i)),((requestedLongitude + i))], [((requestedLatitude + i)+.0000001),((requestedLongitude = i)+.0000001)]];
 
-    // SEND XML SEARCH REQUEST
-    searchXml.send(null);
+                        newTile = L.imageOverlay(requestedLocation.url, {
+                            bounds: bounds,
+                            center: [(requestedLatitude + i),(requestedLongitude + i)],
+                            tileSize: 512,
+                            minZoom: 13,
+                            maxZoom: 13,
+                            opacity: 0.95
+                        });
 
-    // WHEN REQUEST IS READY, PARSE RESULTS
-    searchXml.onreadystatechange=function() {
-        if (searchXml.readyState==4 && searchXml.status==200) {
-            var requestedLocation = JSON.parse(searchXml.responseText);
-            document.getElementById('satelliteImage').src = requestedLocation.url;
-            $("#satelliteImageContainer").removeClass('hidden');
-            document.getElementById('dateTaken').innerHTML = requestedLocation.date;
-            document.getElementById('imageLatitude').innerHTML = requestedLatitude;
-            document.getElementById('imageLongitude').innerHTML = requestedLongitude;
-            $("#imageInfo").removeClass('hidden');
-            console.log(requestedLocation);
+                        newTile.addTo(window.earth);
+
+
+                }
+            }
         }
+        returnHandler(i, searchXml);
     }
 }
 
@@ -94,21 +192,7 @@ function clearImage() {
     $('#imageInfo').addClass('hidden');
 }
 
+*/
 
-
-
-function fizzBuzz() {
-    for (i = 1; i < 101; ++i) {
-        if ((i % 5 === 0) && (i % 3 === 0)) {
-            console.log('fizz buzz');
-        } else if (i % 3 === 0) {
-            console.log('fizz');
-        } else if (i % 5 === 0) {
-            console.log('buzz');
-        } else {
-            console.log(i);
-        }
-    }
-}
 
 </script>

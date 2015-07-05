@@ -4,6 +4,9 @@
 var spaceVis = angular.module('prototype', ['ngRoute']);
 /* END CREATE MODULE */
 
+/* FACTORIES */
+/* END FACTORIES */
+
 /* CONFIGURE ROUTES */
 spaceVis.config(function($routeProvider, $locationProvider) {
     $routeProvider
@@ -55,6 +58,273 @@ spaceVis.controller('starFinderController', function($scope) {
 
     $scope.load = function() {
 
+        // CREATE RENDERER AND PUT IT INTO DOM ELEMENT
+        var renderer = new THREE.WebGLRenderer({ alpha: true, canvas: canvas });
+        var canvas = document.getElementById("canvas-container");
+
+        // START LOADER
+        $("#starContainer").addClass("hidden");
+        $("#spinner").addClass("loader");
+
+        setTimeout(function() {
+            $("#starContainer").removeClass("hidden");
+            $("#spinner").removeClass("loader");
+        }, 1000);
+
+
+        // FORMULA FOR RADIUS: R=(L/(4*pi*s*T^4))^0.5
+
+        // SERIES OF FUNCTIONS TO TAKE 0-1 VALUE AND CONVERT TO COLOUR
+        // Adapted from: en.wikipedia.org/wiki/HSL_color_space
+
+            // RGB TO HSL
+            function rgbToHsl(r, g, b){
+                r /= 255, g /= 255, b /= 255;
+                var max = Math.max(r, g, b), min = Math.min(r, g, b);
+                var h, s, l = (max + min) / 2;
+                if(max == min){
+                    h = s = 0; // achromatic
+                }else{
+                    var d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch(max){
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                return [h, s, l];
+            }
+            // HSL TO RGB FUNCTION
+            function hslToRgb(h, s, l){
+                var r, g, b;
+                if(s == 0){
+                    r = g = b = l; // achromatic
+                }else{
+                    function hue2rgb(p, q, t){
+                        if(t < 0) t += 1;
+                        if(t > 1) t -= 1;
+                        if(t < 1/6) return p + (q - p) * 6 * t;
+                        if(t < 1/2) return q;
+                        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    }
+                    var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    var p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1/3);
+                }
+                return [r * 255, g * 255, b * 255];
+            }
+            // HEX TO RGB FUNCTION
+            function hexToRgb(hex) {
+                return /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+                .slice(1).map(function(v){ return parseInt(v,16) });
+            }
+            // INTERPOLATE ARRAYS
+            function interpolArrays(a,b,k){
+              var c = a.slice();
+              for (var i=0;i<a.length;i++) c[i]+=(b[i]-a[i])*k;
+              return c;
+            }
+            var stones = [ // Your Data
+              {v:-.63, hex:'#9aafff'},
+              {v:.165, hex:'#cad8ff'},
+              {v:.33, hex:'#f7f7ff'},
+              {v:.495, hex:'#fcffd4'},
+              {v:.66, hex:'#fff3a1'},
+              {v:.825, hex:'#ffa350'},
+              {v:2.057, hex:'#fb6252'},
+            ]
+            stones.forEach(function(s){
+              s.rgb = hexToRgb(s.hex);
+              s.hsl = rgbToHsl.apply(0, s.rgb);
+            });
+            function valueToRgbColor(val){
+              for (var i=1; i<stones.length; i++) {
+                if (val<=stones[i].v) {
+                  var k = (val-stones[i-1].v)/(stones[i].v-stones[i-1].v),
+                      hsl = interpolArrays(stones[i-1].hsl, stones[i].hsl, k);
+                  return 'rgb('+hslToRgb.apply(0,hsl).map(function(v){ return v|0})+')';
+                }
+              }
+              throw "bad value";
+            }
+        // END OF COLOUR FUNCTIONS //
+        /////////////////////////////
+
+        // DERIVE TEMPERATURE FROM BV COLOUR VALUE
+        // ADAPTED FROM: www.uni.edu/morgans/stars/b_v.html
+        function calculateTemp(value) {
+            var C1 = 3.979145106714099;
+            var C2 = -0.6544992268598245;
+            var C3 = 1.740690042385095;
+            var C4 = -4.608815154057166;
+            var C5 = 6.792599779944473;
+            var C6 = -5.396909891322525;
+            var C7 = 2.19297037652249;
+            var C8 = -.359495739295671;
+            var f1 = value;
+            bmv = parseFloat(f1);
+            with (Math) {
+                logt=C1+C2*bmv+C3*pow(bmv,2)+C4*pow(bmv,3)+C5*pow(bmv,4)+C6*pow(bmv,5)+C7*pow(bmv,6)+C8*pow(bmv,7);
+                t=pow(10,logt);
+            }
+            return Math.round(t);
+        }
+
+        // PUT RENDERER INTO EXISTING CANVAS ELEMENT
+        document.body.appendChild( renderer.domElement );
+        document.getElementById("canvas-container").appendChild(renderer.domElement);
+
+        // STAR ROTATION
+        var starRotationY = .005;
+
+        // GET WIDTH AND HEIGHT
+        var width = (window.innerWidth * 0.8);
+        var height = (window.innerHeight * 0.8);
+
+        // CREATE SCENE
+        var starScene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 1000 );
+        renderer.setSize( width / height );
+
+        // POSITION THE CAMERA
+        camera.position.z = 5;
+
+        // CREATE VARIOUS LIGHTING ELEMENTS
+        var light = new THREE.AmbientLight( 0x454545 ); // soft white light
+        starScene.add( light );
+        directionalLight = new THREE.DirectionalLight( 0xffffff, 2.0 );
+        directionalLight.position.set( 1, 1, 0.5 ).normalize();
+        starScene.add( directionalLight );
+        pointLight = new THREE.PointLight( 0xffaa00 );
+        pointLight.position.set( 0, 0, 0 );
+        starScene.add( pointLight );
+
+
+
+        // SET UP XML DATABASE REQUEST
+        var databaseUrl = 'http://star-api.herokuapp.com/api/v1/stars';
+        var databaseXml = new XMLHttpRequest();
+        databaseXml.open('GET', databaseUrl, true);
+
+        // SEND XML DATABASE REQUEST
+        databaseXml.send(null);
+
+        // WHEN REQUEST IS READY, PARSE DATABASE INTO ARRAY
+        databaseXml.onreadystatechange=function() {
+            if (databaseXml.readyState==4 && databaseXml.status==200) {
+                window.databaseParse = JSON.parse(databaseXml.responseText);
+                window.starDatabase = [];
+                window.databaseParse.forEach(function(el) {
+                    window.starDatabase.push(el.label)
+                })
+                console.log(starDatabase.length);
+                // JQUERY UI AUTOCOMPLETE
+                $("#search-box").autocomplete({source: window.starDatabase});
+            }
+        }
+
+        ////////////////////////////////////////////////////
+        ////////////// MAIN SEARCH FUNCTION ////////////////
+        ////////////////////////////////////////////////////
+        window.searchRequest = function() {
+
+            searchTerm = document.getElementById('search-box').value;
+
+            // SET UP XML SEARCH REQUEST
+            var searchUrl = 'http://star-api.herokuapp.com/api/v1/stars/' + searchTerm;
+            var searchXml = new XMLHttpRequest();
+            searchXml.open('GET', searchUrl, true);
+
+            // SEND XML SEARCH REQUEST
+            searchXml.send(null);
+
+            // WHEN REQUEST IS READY, PARSE RESULTS
+            searchXml.onreadystatechange=function() {
+                if (searchXml.readyState==4 && searchXml.status==200) {
+                    window.specificStar = JSON.parse(searchXml.responseText);
+                    document.getElementById('object-name').innerHTML = window.specificStar.label;
+                    document.getElementById('luminosity').innerHTML = window.specificStar.lum;
+                    document.getElementById('distance').innerHTML = window.specificStar.distly + ' light years';
+                    document.getElementById('colour').innerHTML = window.specificStar.colorb_v;
+                    document.getElementById('temp').innerHTML = '~' + calculateTemp(window.specificStar.colorb_v) + 'K';
+
+                    // IF STAR IS THE SUN, GET TEXTURE, ELSE SMOOTH MESH
+                    if (window.specificStar.label === "Sun") {
+                        var sunTexture = THREE.ImageUtils.loadTexture( "img/sun.jpg" );
+                        sunTexture.wrapS = THREE.ClampToEdgeWrapping;
+                        sunTexture.wrapT = THREE.ClampToEdgeWrapping;
+                        sunTexture.minFilter = THREE.NearestFilter;
+                        sunTexture.repeat.set( 1, 1 );
+                        var starMaterial = new THREE.MeshBasicMaterial ( {map: sunTexture} );
+                    } else {
+                        // SET STAR COLOUR BASED ON FETCHED VALUE
+                        var starColor = valueToRgbColor(window.specificStar.colorb_v);
+                        var starMaterial = new THREE.MeshLambertMaterial ( {color: starColor} );
+                    }
+
+                    // ADD TEXT LABEL TO COLOUR
+                    if (window.specificStar.colorb_v >= -.63 && window.specificStar.colorb_v < 0) {
+                            document.getElementById('colour').innerHTML += " (Blue)";
+                        } else if (window.specificStar.colorb_v >= 0 && window.specificStar.colorb_v < .165) {
+                            document.getElementById('colour').innerHTML += " (Blueish White)";
+                        } else if (window.specificStar.colorb_v >= .165 && window.specificStar.colorb_v < .33) {
+                            document.getElementById('colour').innerHTML += " (White)";
+                        } else if (window.specificStar.colorb_v >= .33 && window.specificStar.colorb_v < .495) {
+                            document.getElementById('colour').innerHTML += " (Yellowish White)";
+                        } else if (window.specificStar.colorb_v >= .495 && window.specificStar.colorb_v < .66) {
+                            document.getElementById('colour').innerHTML += " (Yellow)";
+                        } else if (window.specificStar.colorb_v >= .66 && window.specificStar.colorb_v < .825) {
+                            document.getElementById('colour').innerHTML += " (Orange)";
+                        } else if (window.specificStar.colorb_v >= .825 && window.specificStar.colorb_v <= 2.057) {
+                            document.getElementById('colour').innerHTML += " (Red)";
+                        }
+
+                    // DEFINE GEOMETERY VARIABLES
+                    var radius = 1;
+                    var segments = 64;
+                    var delta = 0.05;
+
+                    // CREATE SPHERE
+                    var starGeometry = new THREE.SphereGeometry( radius, segments, segments );
+                    window.sphere = new THREE.Mesh( starGeometry, starMaterial );
+                    starScene.add( window.sphere );
+
+                    // RENDER FUNCTION
+                    function render() {
+                            starRender = requestAnimationFrame( render );
+                            renderer.setSize( width, height );
+                            window.sphere.rotation.y += starRotationY;
+                            renderer.render( starScene, camera );
+                        }
+
+                    // IF RENDER ALREADY EXISTS, CANCEL AND CREATE NEW RENDER
+                        if (typeof starFinderHappened === 'undefined') {
+                            window.starFinderHappened = true;
+                            render();
+                        } else {
+                            function reRender() {
+                                cancelAnimationFrame( starRender );
+                                starRender = requestAnimationFrame( render );
+                                renderer.setSize( width, height );
+                                sphere.rotation.y += starRotationY;
+                                renderer.render( starScene, camera );
+                            }
+                            reRender();
+                           }
+                }
+            }
+        }
+        searchRequest();
+        window.clearScene = function() {
+            if (typeof starScene !== 'undefined') {
+                starScene.remove( window.sphere );
+            }
+        }
     }
 
 });
@@ -74,6 +344,10 @@ spaceVis.controller('earthController', function($scope) {
 spaceVis.controller('apodController', function($scope) {
 
     $scope.load = function() {
+
+        window.toggleApodInfo = function() {
+            $("#lightSlider > li.active > div.apodInfoContainer").slideToggle();
+        }
 
         // MONTH NAMES
         var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -130,14 +404,11 @@ spaceVis.controller('apodController', function($scope) {
                                     var mediaType = result.media_type;
 
                                     function createDOM() {
+                                        // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
                                         if (mediaType == "image") {
-                                            document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date"></span>';
+                                            document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="apodInfoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
                                         } else if (mediaType == "video") {
-                                            document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date"></span>';
-                                            /*
-                                            var newSlide = '<li><iframe id="apod' + i + '" class="apod-video"></iframe><br><span id="apod' + i + 'Date"></span></li>';
-                                            $('#lightSlider').append(newSlide);
-                                            */
+                                            document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="apodInfoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
                                         }
                                     }
 
@@ -149,7 +420,9 @@ spaceVis.controller('apodController', function($scope) {
                                         var monthName = date.getMonth();
                                         var year = date.getFullYear();
                                         document.getElementById('apod'+i).src = result.url;
-                                        document.getElementById('apod'+i+"Date").innerHTML = day + " " + monthNames[monthName] + " " + year;
+                                        document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
+                                        document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
+                                        document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
                                     }
 
                                     createDOM();
@@ -180,7 +453,7 @@ spaceVis.controller('apodController', function($scope) {
                         setTimeout(function(){
                             $("#spinner").removeClass("loader");
                             document.getElementById('apodContainer').style.visibility = "visible"
-                        }, 3000);
+                        }, 2000);
                     },
 
                     // AFTER EACH SLIDE TRANSITION, DO THIS

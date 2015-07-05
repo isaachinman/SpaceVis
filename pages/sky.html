@@ -20,11 +20,14 @@
 
             <button id="getMyLocation" onclick="getMyLocation();">Get My Location</button>
 
-            <button id="getSkyCenter" onclick="getSkyInfo();">See What's Visible</button>
+            <button id="getSkyCenter" onclick="getAllInfo();">See What's Visible</button>
 
             <div id="skyMoreInfo" class="hidden">
 
-                <span>In the selected location, it is <span id="cloudMessage"></span>, with a cloud cover of <span id="cloudPercent"></span>%.</span><br>
+                <span>In the selected location over the course of the next hour it will be <span id="cloudMessage"></span>, with a cloud cover of <span id="cloudPercent"></span>%.</span><br>
+
+                <span id="planetsVisible">In the selected location, the following planets are visible in the sky:</span><br>
+
 
             </div><!-- end skyMoreInfo -->
 
@@ -39,7 +42,6 @@
 </div><!-- end container -->
 
 <script>
-
 
 var map, GeoMarker;
 
@@ -131,31 +133,66 @@ function getMyLocation() {
 
 initialize();
 
-function getSkyInfo() {
+function getAllInfo() {
 
+    // GET AND SET CURRENT LOCATION VARS
     var currentLocation = map.getCenter();
     var currentLocationLat = currentLocation.A;
     var currentLocationLong = currentLocation.F;
     console.log(currentLocationLat);
     console.log(currentLocationLong);
 
-    var skyUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/hourly/q/" + currentLocationLat + "," + currentLocationLong + ".json";
-    var skyXML = new XMLHttpRequest();
-    skyXML.open('GET', skyUrl, true);
-    skyXML.send(null);
+    function getSkyInfo() {
+        var skyUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/hourly/q/" + currentLocationLat + "," + currentLocationLong + ".json";
+        var skyXML = new XMLHttpRequest();
+        skyXML.open('GET', skyUrl, true);
+        skyXML.send(null);
 
-    // WHEN REQUEST IS READY, ADD IMG SRC
-    skyXML.onreadystatechange=function() {
-        if (skyXML.readyState==4 && skyXML.status==200) {
-            var skyParse = JSON.parse(skyXML.responseText);
-            var cloudiness = skyParse.hourly_forecast[0].sky;
-            var visibilityMessage = (skyParse.hourly_forecast[0].condition).toLowerCase();
-            document.getElementById('cloudMessage').innerHTML = visibilityMessage;
-            document.getElementById('cloudPercent').innerHTML = cloudiness;
-            $('#skyMoreInfo').removeClass('hidden');
-            console.log(skyParse);
+        // WHEN REQUEST IS READY, ADD IMG SRC
+        skyXML.onreadystatechange=function() {
+            if (skyXML.readyState==4 && skyXML.status==200) {
+                var skyParse = JSON.parse(skyXML.responseText);
+                var cloudiness = skyParse.hourly_forecast[0].sky;
+                var visibilityMessage = (skyParse.hourly_forecast[0].condition).toLowerCase();
+                document.getElementById('cloudMessage').innerHTML = visibilityMessage;
+                document.getElementById('cloudPercent').innerHTML = cloudiness;
+                $('#skyMoreInfo').removeClass('hidden');
+                console.log(skyParse);
+            }
         }
+
     }
+
+    function getPlanetsInfo() {
+        var planetUrl = "http://crossorigin.me/http://planets-api.awsm.st/visible/" + currentLocationLat + "/" + currentLocationLong;
+        var planetXML = new XMLHttpRequest();
+        planetXML.open('GET', planetUrl, true);
+        planetXML.send(null);
+
+        // WHEN REQUEST IS READY, ADD IMG SRC
+        planetXML.onreadystatechange=function() {
+            if (planetXML.readyState==4 && planetXML.status==200) {
+                var planetParse = JSON.parse(planetXML.responseText);
+                console.log(planetParse);
+
+
+                var planetList = [];
+                planetParse.forEach(function(el) {
+                    planetList.push(el.name)
+                    document.getElementById('skyMoreInfo').innerHTML += '<span id="planet' + el + '">' + el.name + ' (' + el.description.azimuth + ', ' + ((el.description.altitude).toLowerCase()) + ')' + '</span><br>';
+                })
+
+                console.log(planetList);
+
+
+            }
+        }
+
+
+    }
+
+    getSkyInfo();
+    getPlanetsInfo();
 
 }
 

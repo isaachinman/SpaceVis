@@ -37,27 +37,16 @@
 <script src="js/jquery-ui.min.js"></script>
 <!-- END SEARCH AUTOCOMPLETE -->
 
-<!-- LOAD WEBGL EARTH -->
-<script src="http://www.webglearth.com/v2/api.js"></script>
-<!-- END LOAD WEBGL EARTH -->
-
-<!-- LOAD LEAFLET -->
-<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
-<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
-<!-- END LOAD LEAFLET -->
-
-<!-- LOAD GEOSEARCH PLUGIN -->
-<script src="js/leaflet-search.js"></script>
-<link rel="stylesheet" href="css/leaflet-search.css">
-<link rel="stylesheet" href="css/leaflet-search.mobile.css">
-<!-- END LOAD GEOSEARCH PLUGIN -->
+<!-- LOAD CESIUM -->
+<link rel="stylesheet" href="js/Widgets/widgets.css">
+<script src="js/Cesium.js"></script>
+<!-- END LOAD CESIUM -->
 
 <!-- LOAD PHOTO SLIDER -->
 <script src="js/lightslider.js"></script>
 <!-- END LOAD PHOTO SLIDER -->
 
 <!-- LOAD GOOGLE MAPS API -->
-
 <script src="js/google-maps-geolocation-marker.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 <!-- END LOAD GOOGLE MAPS API -->
@@ -69,6 +58,7 @@
 </head>
 
 <body>
+<div class="background-gradient">
 
 <!-- NAVBAR -->
 <nav id="nav" class="navbar navbar-default">
@@ -102,40 +92,12 @@
 
 <div id="main">
 
-<!-- CREATE MAIN RENDERER AND PUT IT INTO EXISTING CANVAS ELEMENT -->
-<script>
-var renderer = new THREE.WebGLRenderer({ alpha: true, canvas: canvas });
-var canvas = document.getElementById("canvas-container");
-</script>
-<!-- END CREATE MAIN RENDERER AND PUT IT INTO EXISTING CANVAS ELEMENT -->
-
-<div data-ng-view></div>
+    <div data-ng-view></div>
 
 </div><!-- #main -->
 
 <!-- END MAIN CONTENT -->
 
-<!-- MAKE NAV ELEMENTS ACTIVE -->
-<script>
-/*
-$("#nav a").on("click", function(){
-$("#nav").find(".active").removeClass("active");
-$(this).parent().addClass("active");
-});
-*/
-
-
-</script>
-<!-- END MAKE NAV ELEMENTS ACTIVE -->
-
-<!-- CLEAR SCENE FUNCTION -->
-<script>
-function clearScene() {
-    if (typeof starScene !== 'undefined') {
-        starScene.remove( window.sphere );
-    }
-}
-</script>
-
+</div><!-- end background-gradient -->
 </body>
 </html>
