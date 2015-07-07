@@ -346,7 +346,7 @@ spaceVis.controller('apodController', function($scope) {
     $scope.load = function() {
 
         window.toggleApodInfo = function() {
-            $("#lightSlider > li.active > div.apodInfoContainer").slideToggle();
+            $("#lightSlider > li.active > div.infoContainer").slideToggle();
         }
 
         // MONTH NAMES
@@ -406,9 +406,9 @@ spaceVis.controller('apodController', function($scope) {
                                     function createDOM() {
                                         // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
                                         if (mediaType == "image") {
-                                            document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="apodInfoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
+                                            document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
                                         } else if (mediaType == "video") {
-                                            document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="apodInfoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
+                                            document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
                                         }
                                     }
 
@@ -481,12 +481,191 @@ spaceVis.controller('skyController', function($scope) {
 
     $scope.load = function() {
 
+        var map, GeoMarker;
+
+        function initialize() {
+
+            var mapOptions = {
+                zoom: 2,
+                maxZoom: 12,
+                center: new google.maps.LatLng(0, 0),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+
+            map = new google.maps.Map(document.getElementById('googleMap'),
+                mapOptions);
+
+        // Create the search box and link it to the UI element.
+          var input = /** @type {HTMLInputElement} */ (
+            document.getElementById('pac-input'));
+          map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+          var searchBox = new google.maps.places.SearchBox(
+            /** @type {HTMLInputElement} */
+            (input));
+
+          // Listen for the event fired when the user selects an item from the
+          // pick list. Retrieve the matching places for that item.
+          google.maps.event.addListener(searchBox, 'places_changed', function() {
+              $('#skyMoreInfo').addClass('hidden');
+            var places = searchBox.getPlaces();
+
+            markers = [];
+
+            for (var i = 0, marker; marker = markers[i]; i++) {
+              marker.setMap(null);
+            }
+
+            // For each place, get the icon, place name, and location.
+            var bounds = new google.maps.LatLngBounds();
+            var place = null;
+            var viewport = null;
+            for (var i = 0; place = places[i]; i++) {
+              var image = {
+                url: place.icon,
+                size: new google.maps.Size(71, 71),
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(17, 34),
+                scaledSize: new google.maps.Size(25, 25)
+              };
+
+              // Create a marker for each place.
+              var marker = new google.maps.Marker({
+                map: map,
+                icon: image,
+                title: place.name,
+                position: place.geometry.location
+              });
+              viewport = place.geometry.viewport;
+              markers.push(marker);
+
+              bounds.extend(place.geometry.location);
+            }
+            map.setCenter(bounds.getCenter());
+            map.fitBounds(bounds);
+          });
+
+          // Bias the SearchBox results towards places that are within the bounds of the
+          // current map's viewport.
+          google.maps.event.addListener(map, 'bounds_changed', function() {
+            var bounds = map.getBounds();
+            searchBox.setBounds(bounds);
+          });
+
+        }
+
+        window.getMyLocation = function() {
+
+            GeoMarker = new GeolocationMarker();
+            GeoMarker.setCircleOptions({fillColor: '#808080'});
+
+            google.maps.event.addListenerOnce(GeoMarker, 'position_changed', function() {
+                map.setCenter(this.getPosition());
+                map.fitBounds(this.getBounds());
+            });
+
+            GeoMarker.setMap(map);
+
+            if(!navigator.geolocation) {
+                alert('Your browser does not support geolocation');
+            }
+
+        }
+
+        initialize();
+
+        window.getAllInfo = function() {
+
+            // GET AND SET CURRENT LOCATION VARS
+            var currentLocation = map.getCenter();
+            var currentLocationLat = currentLocation.A;
+            var currentLocationLong = currentLocation.F;
+            console.log(currentLocationLat);
+            console.log(currentLocationLong);
+
+            if (currentLocationLat == 0 && currentLocationLong == 0) {
+                alert("Please choose a valid location")
+            } else {
+
+                function getSkyInfo() {
+                    var skyUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/hourly/q/" + currentLocationLat + "," + currentLocationLong + ".json";
+                    var skyXML = new XMLHttpRequest();
+                    skyXML.open('GET', skyUrl, true);
+                    skyXML.send(null);
+
+                    // WHEN REQUEST IS READY, ADD IMG SRC
+                    skyXML.onreadystatechange=function() {
+                        if (skyXML.readyState==4 && skyXML.status==200) {
+                            var skyParse = JSON.parse(skyXML.responseText);
+                            var cloudiness = skyParse.hourly_forecast[0].sky;
+                            var visibilityMessage = (skyParse.hourly_forecast[0].condition).toLowerCase();
+                            document.getElementById('cloudMessage').innerHTML = visibilityMessage;
+                            document.getElementById('cloudPercent').innerHTML = cloudiness;
+                            $('#skyMoreInfo').removeClass('hidden');
+                            console.log(skyParse);
+                        }
+                    }
+
+                }
+
+                function getPlanetsInfo() {
+                    var planetUrl = "http://crossorigin.me/http://planets-api.awsm.st/visible/" + currentLocationLat + "/" + currentLocationLong;
+                    var planetXML = new XMLHttpRequest();
+                    planetXML.open('GET', planetUrl, true);
+                    planetXML.send(null);
+
+                    // WHEN REQUEST IS READY
+                    planetXML.onreadystatechange=function() {
+                        if (planetXML.readyState==4 && planetXML.status==200) {
+                            var planetParse = JSON.parse(planetXML.responseText);
+                            console.log(planetParse);
+
+                            var planetList = [];
+                            planetParse.forEach(function(el) {
+                                planetList.push(el.name)
+                                document.getElementById('leftPanel').innerHTML += '<span id="planet' + el + '">' + el.name + ' (' + el.description.azimuth + ', ' + ((el.description.altitude).toLowerCase()) + ')' + '</span><br>';
+                            })
+                        }
+                    }
+                }
+
+                function getMoonInfo() {
+                    var moonUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/astronomy/q/" + currentLocationLat + "," + currentLocationLong + ".json";
+                    var moonXML = new XMLHttpRequest();
+                    moonXML.open('GET', moonUrl, true);
+                    moonXML.send(null);
+
+                    // WHEN REQUEST IS READY
+                    moonXML.onreadystatechange=function() {
+                        if (moonXML.readyState==4 && moonXML.status==200) {
+                            var moonParse = JSON.parse(moonXML.responseText);
+
+                            // FILL IN MOON INFO
+                            document.getElementById('rightPanel').innerHTML += '<span id="moonInfo"></span><br>';
+                            document.getElementById('moonInfo').innerHTML += '<span id="moonPhase">Current Moon phase: ' + ((moonParse.moon_phase.phaseofMoon).toLowerCase()) + '</span><br>';
+                            document.getElementById('moonInfo').innerHTML += '<span id="moonPercent">The Moon is ' + moonParse.moon_phase.percentIlluminated + '% illuminated</span><br>';
+                            // FILL IN SUN INFO
+                            document.getElementById('rightPanel').innerHTML += '<span id="sunInfo"></span>';
+                            document.getElementById('sunInfo').innerHTML += '<span id="sunrise">Sunrise is at ' + moonParse.sun_phase.sunrise.hour + ':' + moonParse.sun_phase.sunrise.minute + '</span><br>';
+                            document.getElementById('sunInfo').innerHTML += '<span id="sunset">Sunset is at ' + moonParse.sun_phase.sunset.hour + ':' + moonParse.sun_phase.sunset.minute + '</span><br>';
+                            console.log(moonParse);
+                        }
+                    }
+                }
 
 
+                getSkyInfo();
+                getPlanetsInfo();
+                getMoonInfo();
 
-
+                // DESKTOP VS MOBILE BEHAVIOUR
+                if ($(window).width() > 600) {
+                    $('#googleMap').animate({width:'40vw'}, 500);
+                    setTimeout(function() { $('.panel').slideDown(); }, 250);
+                }
+            }
+        }
     }
-
 });
 /* END INFO CONTROLLER */
 
