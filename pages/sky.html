@@ -8,47 +8,65 @@
 
     <div class="row">
 
-    <div class="span12 text-center">
+        <div class="span12 text-center">
 
-        <div id="skyContainer" class="flex-container">
+            <div id="skyContainer" class="flex-container">
 
-            <input id="pac-input"></input>
+                <input id="pac-input"></input>
 
-            <div id="leftPanel" class="panel">
+                <div id="leftPanel" class="panel">
 
-                <h4>Planets</h4>
+                    <h4>Planets</h4>
 
-                <span id="planetsVisible">The following planets are visible in the sky:</span><br><br>
+                    The following planets are visible in the sky:<br><br>
 
-            </div><!-- end leftPanel -->
+                    <span id="planetsVisible" class="dynamicText"></span><br><br>
 
-            <div id="googleMap" class="rounded-corners"></div>
+                </div><!-- end leftPanel -->
 
-            <div id="rightPanel" class="panel">
+                <div id="googleMap" class="rounded-corners"></div>
 
-                <h4>Sun & Moon</h4>
+                <div id="rightPanel" class="panel">
 
-            </div><!-- end rightPanel -->
+                    <h4>Sun & Moon</h4>
 
-            <button id="getMyLocation" onclick="getMyLocation();">Get My Location</button>
+                    <span id="moonInfo">
 
-            <div id="skyInfoContainer">
+                        <span id="moonPhase" class="dynamicText"></span><br>
 
-                <button id="getSkyCenter" onclick="getAllInfo();">See What's Visible</button>
+                        <span id="moonPercent" class="dynamicText"></span><br>
 
-                <div id="skyMoreInfo" class="hidden infoContainer">
+                    </span><br><!-- end moonInfo -->
 
-                    <h4>Weather:</h4>
+                    <span id="sunInfo">
 
-                    <span>Over the course of the next hour it will be <span id="cloudMessage"></span>, with a cloud cover of <span id="cloudPercent"></span>%</span><br>
+                        <span id="sunrise" class="dynamicText"></span><br>
 
-                </div><!-- end skyMoreInfo -->
+                        <span id="sunset" class="dynamicText"></span><br>
 
-            </div><!-- end skyInfoContainer -->
+                    </span><!-- end sunInfo -->
 
-        </div><!-- end skyContainer -->
+                </div><!-- end rightPanel -->
 
-    </div><!-- end span12 -->
+                <button id="getMyLocation" onclick="getMyLocation();">Get My Location</button>
+
+                <div id="skyInfoContainer">
+
+                    <button id="getSkyCenter" onclick="getAllInfo();initialiseMapUI();">See What's Visible</button>
+
+                    <div id="skyMoreInfo" class="hidden infoContainer">
+
+                        <h4>Weather:</h4>
+
+                        <span>Over the course of the next hour it will be <span id="cloudMessage" class="dynamicText"></span>, with a cloud cover of <span id="cloudPercent" class="dynamicText"></span>%</span><br>
+
+                    </div><!-- end skyMoreInfo -->
+
+                </div><!-- end skyInfoContainer -->
+
+            </div><!-- end skyContainer -->
+
+        </div><!-- end span12 -->
 
     </div><!-- end row -->
 

@@ -4,9 +4,6 @@
 var spaceVis = angular.module('prototype', ['ngRoute']);
 /* END CREATE MODULE */
 
-/* FACTORIES */
-/* END FACTORIES */
-
 /* CONFIGURE ROUTES */
 spaceVis.config(function($routeProvider, $locationProvider) {
     $routeProvider
@@ -62,15 +59,11 @@ spaceVis.controller('starFinderController', function($scope) {
         var renderer = new THREE.WebGLRenderer({ alpha: true, canvas: canvas });
         var canvas = document.getElementById("canvas-container");
 
-        // START LOADER
-        $("#starContainer").addClass("hidden");
-        $("#spinner").addClass("loader");
-
-        setTimeout(function() {
-            $("#starContainer").removeClass("hidden");
-            $("#spinner").removeClass("loader");
-        }, 1000);
-
+        $(window).resize(function() {
+            var width = (window.innerWidth * 0.8);
+            var height = (window.innerHeight * 0.8);
+            renderer.setSize( width / height );
+        });
 
         // FORMULA FOR RADIUS: R=(L/(4*pi*s*T^4))^0.5
 
@@ -186,6 +179,7 @@ spaceVis.controller('starFinderController', function($scope) {
         var width = (window.innerWidth * 0.8);
         var height = (window.innerHeight * 0.8);
 
+
         // CREATE SCENE
         var starScene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 1000 );
@@ -203,8 +197,6 @@ spaceVis.controller('starFinderController', function($scope) {
         pointLight = new THREE.PointLight( 0xffaa00 );
         pointLight.position.set( 0, 0, 0 );
         starScene.add( pointLight );
-
-
 
         // SET UP XML DATABASE REQUEST
         var databaseUrl = 'http://star-api.herokuapp.com/api/v1/stars';
@@ -233,6 +225,10 @@ spaceVis.controller('starFinderController', function($scope) {
         ////////////////////////////////////////////////////
         window.searchRequest = function() {
 
+            // ADD LOADER ANIMATION
+            $("#starContainer").addClass("hidden");
+            $("#spinner").addClass("loader");
+
             searchTerm = document.getElementById('search-box').value;
 
             // SET UP XML SEARCH REQUEST
@@ -246,6 +242,11 @@ spaceVis.controller('starFinderController', function($scope) {
             // WHEN REQUEST IS READY, PARSE RESULTS
             searchXml.onreadystatechange=function() {
                 if (searchXml.readyState==4 && searchXml.status==200) {
+
+                    // REMOVE LOADER ANIMATION
+                    $("#starContainer").removeClass("hidden");
+                    $("#spinner").removeClass("loader");
+
                     window.specificStar = JSON.parse(searchXml.responseText);
                     document.getElementById('object-name').innerHTML = window.specificStar.label;
                     document.getElementById('luminosity').innerHTML = window.specificStar.lum;
@@ -285,7 +286,11 @@ spaceVis.controller('starFinderController', function($scope) {
                         }
 
                     // DEFINE GEOMETERY VARIABLES
-                    var radius = 1;
+                    if ($(window).width() < 600) {
+                        var radius = 0.75;
+                    } else {
+                        var radius = 1;
+                    }
                     var segments = 64;
                     var delta = 0.05;
 
@@ -355,131 +360,130 @@ spaceVis.controller('apodController', function($scope) {
         // SLIDE ARRAY
         window.imgIds = [];
 
-        ////////////////////////////////////
-        ////////// GENERATE SLIDES /////////
-        ////////////////////////////////////
+        // GENERATE SLIDES FUNCTION
+        function generateSlides() {
 
-            function generateSlides() {
+            var stopGeneratingSlides = (window.imgIds.length + 10);
 
-                var stopGeneratingSlides = (window.imgIds.length + 10);
+            var startLength = (window.imgIds.length + 1);
 
-                var startLength = (window.imgIds.length + 1);
+            for (var i = startLength; i < stopGeneratingSlides; i++) {
 
-                for (var i = startLength; i < stopGeneratingSlides; i++) {
+                // SET UP NEW SLIDE HTML
+                var li = '<li id="apodLi'+i+'"></li>';
+                $('#lightSlider').append(li);
+                window.imgIds.push('apod'+i);
 
-                    // SET UP NEW SLIDE HTML
-                    var li = '<li id="apodLi'+i+'"></li>';
-                    $('#lightSlider').append(li);
-                    window.imgIds.push('apod'+i);
+                // GENERATE XML REQUEST
+                function slideSetUp(callback) {
 
-                    // GENERATE XML REQUEST
-                    function slideSetUp(callback) {
+                    // GENERATE DATE
+                    var date = new Date();
+                    date.setDate(date.getDate() - (i-1));
+                    var day = date.getDate();
+                    var month = ("0" + (date.getMonth() +1)).slice(-2);
+                    var monthName = date.getMonth();
+                    var year = date.getFullYear();
 
-                        // GENERATE DATE
-                        var date = new Date();
-                        date.setDate(date.getDate() - (i-1));
-                        var day = date.getDate();
-                        var month = ("0" + (date.getMonth() +1)).slice(-2);
-                        var monthName = date.getMonth();
-                        var year = date.getFullYear();
+                    var apodUrl = "https://api.nasa.gov/planetary/apod?concept_tags=True&date=" + year + "-" + month + "-" + day + "&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+                    var apodXml = new XMLHttpRequest();
+                    apodXml.open('GET', apodUrl, true);
+                    apodXml.send(null);
 
-                        var apodUrl = "https://api.nasa.gov/planetary/apod?concept_tags=True&date=" + year + "-" + month + "-" + day + "&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
-                        var apodXml = new XMLHttpRequest();
-                        apodXml.open('GET', apodUrl, true);
-                        apodXml.send(null);
-
-                        // WHEN REQUEST IS READY, ADD IMG SRC
-                        apodXml.onreadystatechange=function() {
-                            if (apodXml.readyState==4 && apodXml.status==200) {
-                                var apodParse = JSON.parse(apodXml.responseText);
-                                callback(apodParse);
-                            }
+                    // WHEN REQUEST IS READY, ADD IMG SRC
+                    apodXml.onreadystatechange=function() {
+                        if (apodXml.readyState==4 && apodXml.status==200) {
+                            var apodParse = JSON.parse(apodXml.responseText);
+                            callback(apodParse);
                         }
                     }
-
-                        slideSetUp(
-                            (function(i, day, monthName, year) {
-                                return function(result) {
-
-                                    var mediaType = result.media_type;
-
-                                    function createDOM() {
-                                        // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
-                                        if (mediaType == "image") {
-                                            document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
-                                        } else if (mediaType == "video") {
-                                            document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
-                                        }
-                                    }
-
-                                    function fillDOM() {
-                                        // GENERATE DATE
-                                        var date = new Date();
-                                        date.setDate(date.getDate() - (i-1));
-                                        var day = date.getDate();
-                                        var monthName = date.getMonth();
-                                        var year = date.getFullYear();
-                                        document.getElementById('apod'+i).src = result.url;
-                                        document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
-                                        document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
-                                        document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
-                                    }
-
-                                    createDOM();
-                                    fillDOM();
-                                }
-                            })(i)
-                        );
                 }
+
+                    slideSetUp(
+                        (function(i, day, monthName, year) {
+                            return function(result) {
+
+                                var mediaType = result.media_type;
+
+                                function createDOM() {
+                                    // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
+                                    if (mediaType == "image") {
+                                        document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
+                                    } else if (mediaType == "video") {
+                                        document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
+                                    }
+                                }
+
+                                function fillDOM() {
+                                    // GENERATE DATE
+                                    var date = new Date();
+                                    date.setDate(date.getDate() - (i-1));
+                                    var day = date.getDate();
+                                    var monthName = date.getMonth();
+                                    var year = date.getFullYear();
+                                    document.getElementById('apod'+i).src = result.url;
+                                    document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
+                                    document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
+                                    document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
+                                }
+
+                                createDOM();
+                                fillDOM();
+
+                                // END LOADER ANIMATION ON INITIAL LOAD
+                                if (i == (stopGeneratingSlides-1) && $("#spinner").hasClass("loader")) {
+                                    $("#spinner").removeClass("loader");
+                                    document.getElementById('apodContainer').style.visibility = "visible";
+                                }
+                            }
+                        })(i)
+                    );
             }
+        }
 
-            generateSlides();
+        generateSlides();
 
-            // SET UP SLIDER
-            window.slider = $("#lightSlider").lightSlider({
-                    item: 1,
-                    adaptiveHeight: true,
-                    enableTouch: true,
-                    enableDrag: true,
-                    loop: false,
-                    speed: 0,
-                    keyPress: true,
-                    slideMargin: 0,
-                    gallery: false,
+        // SET UP SLIDER
+        window.slider = $("#lightSlider").lightSlider({
+            item: 1,
+            adaptiveHeight: true,
+            enableTouch: true,
+            enableDrag: true,
+            loop: false,
+            speed: 0,
+            keyPress: true,
+            slideMargin: 0,
+            gallery: false,
 
-                    // LOADING SEQUENCE PLACEHOLDER
-                    onBeforeStart: function (el) {
-                        $("#spinner").addClass("loader");
-                        setTimeout(function(){
-                            $("#spinner").removeClass("loader");
-                            document.getElementById('apodContainer').style.visibility = "visible"
-                        }, 2000);
-                    },
+            // LOADING SEQUENCE PLACEHOLDER
+            onBeforeStart: function (el) {
+                $("#spinner").addClass("loader");
+                document.getElementById('apodContainer').style.visibility = "hidden";
+            },
 
-                    // AFTER EACH SLIDE TRANSITION, DO THIS
-                    onAfterSlide: function (el) {
+            // AFTER EACH SLIDE TRANSITION, DO THIS
+            onAfterSlide: function (el) {
 
-                        // WHEN GETTING CLOSE TO END OF SLIDES, ADD MORE
-                        currentSlide = '#apod' + (window.imgIds.length - 3);
+                // WHEN GETTING CLOSE TO END OF SLIDES, ADD MORE
+                currentSlide = '#apod' + (window.imgIds.length - 3);
 
-                        if ($(currentSlide).parent().hasClass("active")) {
-                            generateSlides();
-                            window.slider.refresh();
-                        };
-
-                    },
-
-                });
-
+                if ($(currentSlide).parent().hasClass("active")) {
+                    generateSlides();
+                    window.slider.refresh();
+                };
+            },
+        });
     }
-
 });
 /* END APOD CONTROLLER */
 
-/* INFO CONTROLLER */
+/* SKY CONTROLLER */
 spaceVis.controller('skyController', function($scope) {
 
     $scope.load = function() {
+
+        document.getElementById('skyContainer').style.visibility = "hidden";
+        $("#spinner").addClass("loader");
 
         var map, GeoMarker;
 
@@ -489,69 +493,69 @@ spaceVis.controller('skyController', function($scope) {
                 zoom: 2,
                 maxZoom: 12,
                 center: new google.maps.LatLng(0, 0),
-                mapTypeId: google.maps.MapTypeId.ROADMAP
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
             };
 
-            map = new google.maps.Map(document.getElementById('googleMap'),
-                mapOptions);
+            map = new google.maps.Map(document.getElementById('googleMap'), mapOptions);
 
-        // Create the search box and link it to the UI element.
-          var input = /** @type {HTMLInputElement} */ (
-            document.getElementById('pac-input'));
-          map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            // REMOVE LOADING ANIMATION WHEN MAP IS READY
+            google.maps.event.addListenerOnce(map, 'idle', function(){
+                setTimeout(function() {
+                    $("#spinner").removeClass("loader");
+                    document.getElementById('skyContainer').style.visibility = "visible";
+                }, 100);
+            });
 
-          var searchBox = new google.maps.places.SearchBox(
-            /** @type {HTMLInputElement} */
-            (input));
+            // CREATE SEARCH BOX AND LINK TO UI ELEMENT
+            var input = document.getElementById('pac-input');
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            var searchBox = new google.maps.places.SearchBox(input);
 
-          // Listen for the event fired when the user selects an item from the
-          // pick list. Retrieve the matching places for that item.
-          google.maps.event.addListener(searchBox, 'places_changed', function() {
-              $('#skyMoreInfo').addClass('hidden');
-            var places = searchBox.getPlaces();
+            // RUN EVERYTIME A NEW LOCATION IS SELECTED
+            google.maps.event.addListener(searchBox, 'places_changed', function() {
 
-            markers = [];
+                // ONLY RUN IF USER HAS ALREADY REQUESTED SKY INFO
+                if (window.skyFinderHasRun == 'ran') {
+                    $('.dynamicText').html("");
+                    getAllInfo();
+                }
 
-            for (var i = 0, marker; marker = markers[i]; i++) {
-              marker.setMap(null);
-            }
+                var places = searchBox.getPlaces();
 
-            // For each place, get the icon, place name, and location.
-            var bounds = new google.maps.LatLngBounds();
-            var place = null;
-            var viewport = null;
-            for (var i = 0; place = places[i]; i++) {
-              var image = {
-                url: place.icon,
-                size: new google.maps.Size(71, 71),
-                origin: new google.maps.Point(0, 0),
-                anchor: new google.maps.Point(17, 34),
-                scaledSize: new google.maps.Size(25, 25)
-              };
+                markers = [];
 
-              // Create a marker for each place.
-              var marker = new google.maps.Marker({
-                map: map,
-                icon: image,
-                title: place.name,
-                position: place.geometry.location
-              });
-              viewport = place.geometry.viewport;
-              markers.push(marker);
+                for (var i = 0, marker; marker = markers[i]; i++) {
+                    marker.setMap(null);
+                }
 
-              bounds.extend(place.geometry.location);
-            }
-            map.setCenter(bounds.getCenter());
-            map.fitBounds(bounds);
-          });
+                // GET ICON, NAME, LOCATION
+                var bounds = new google.maps.LatLngBounds();
+                var place = null;
+                var viewport = null;
+                for (var i = 0; place = places[i]; i++) {
+                    var image = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
 
-          // Bias the SearchBox results towards places that are within the bounds of the
-          // current map's viewport.
-          google.maps.event.addListener(map, 'bounds_changed', function() {
-            var bounds = map.getBounds();
-            searchBox.setBounds(bounds);
-          });
+                    // CREATE NEW MARKER
+                    window.marker = new google.maps.Marker({
+                        map: map,
+                        icon: image,
+                        title: place.name,
+                        position: place.geometry.location
+                    });
+                    viewport = place.geometry.viewport;
+                    markers.push(marker);
 
+                    bounds.extend(place.geometry.location);
+                }
+                map.setCenter(bounds.getCenter());
+                map.fitBounds(bounds);
+            });
         }
 
         window.getMyLocation = function() {
@@ -569,10 +573,28 @@ spaceVis.controller('skyController', function($scope) {
             if(!navigator.geolocation) {
                 alert('Your browser does not support geolocation');
             }
-
         }
 
         initialize();
+
+        window.initialiseMapUI = function() {
+
+            // DESKTOP VS MOBILE BEHAVIOUR
+            if ($(window).width() > 600) {
+
+                // RESIZE GOOGLE MAP
+                $('#googleMap').animate({width:'40vw'}, 500);
+
+                // SLIDE OUT INFO PANELS
+                setTimeout(function() { $('.panel').slideDown(); }, 250);
+
+                // WAIT UNTIL MAP HAS RESIZED AND PAN BACK TO MARKER
+                setTimeout(function() {
+                    var currentMarkerPosition = window.marker.getPosition();
+                    google.maps.event.trigger(map, "resize");
+                    map.panTo(currentMarkerPosition); }, 500);
+            }
+        }
 
         window.getAllInfo = function() {
 
@@ -583,17 +605,22 @@ spaceVis.controller('skyController', function($scope) {
             console.log(currentLocationLat);
             console.log(currentLocationLong);
 
+            // DON'T RUN FUNCTION IF AT DEFAULT GLOBE VIEW
             if (currentLocationLat == 0 && currentLocationLong == 0) {
                 alert("Please choose a valid location")
             } else {
 
+                // SET VAR TO INDICATE FUNCTION HAS RUN ONCE
+                window.skyFinderHasRun = 'ran';
+
+                // GET WEATHER INFO
                 function getSkyInfo() {
                     var skyUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/hourly/q/" + currentLocationLat + "," + currentLocationLong + ".json";
                     var skyXML = new XMLHttpRequest();
                     skyXML.open('GET', skyUrl, true);
                     skyXML.send(null);
 
-                    // WHEN REQUEST IS READY, ADD IMG SRC
+                    // WHEN REQUEST IS READY
                     skyXML.onreadystatechange=function() {
                         if (skyXML.readyState==4 && skyXML.status==200) {
                             var skyParse = JSON.parse(skyXML.responseText);
@@ -608,6 +635,7 @@ spaceVis.controller('skyController', function($scope) {
 
                 }
 
+                // GET PLANET INFO
                 function getPlanetsInfo() {
                     var planetUrl = "http://crossorigin.me/http://planets-api.awsm.st/visible/" + currentLocationLat + "/" + currentLocationLong;
                     var planetXML = new XMLHttpRequest();
@@ -623,12 +651,13 @@ spaceVis.controller('skyController', function($scope) {
                             var planetList = [];
                             planetParse.forEach(function(el) {
                                 planetList.push(el.name)
-                                document.getElementById('leftPanel').innerHTML += '<span id="planet' + el + '">' + el.name + ' (' + el.description.azimuth + ', ' + ((el.description.altitude).toLowerCase()) + ')' + '</span><br>';
+                                document.getElementById('planetsVisible').innerHTML += el.name + ' (' + el.description.azimuth + ', ' + ((el.description.altitude).toLowerCase()) + ')' + '<br>';
                             })
                         }
                     }
                 }
 
+                // GET MOON AND SUN INFO
                 function getMoonInfo() {
                     var moonUrl = "http://api.wunderground.com/api/ab3865c51ff9ccb5/astronomy/q/" + currentLocationLat + "," + currentLocationLong + ".json";
                     var moonXML = new XMLHttpRequest();
@@ -641,33 +670,25 @@ spaceVis.controller('skyController', function($scope) {
                             var moonParse = JSON.parse(moonXML.responseText);
 
                             // FILL IN MOON INFO
-                            document.getElementById('rightPanel').innerHTML += '<span id="moonInfo"></span><br>';
-                            document.getElementById('moonInfo').innerHTML += '<span id="moonPhase">Current Moon phase: ' + ((moonParse.moon_phase.phaseofMoon).toLowerCase()) + '</span><br>';
-                            document.getElementById('moonInfo').innerHTML += '<span id="moonPercent">The Moon is ' + moonParse.moon_phase.percentIlluminated + '% illuminated</span><br>';
+                            document.getElementById('moonPhase').innerHTML += 'Current phase: ' + (moonParse.moon_phase.phaseofMoon).toLowerCase();
+                            document.getElementById('moonPercent').innerHTML += 'The Moon is ' + moonParse.moon_phase.percentIlluminated + '% illuminated';
                             // FILL IN SUN INFO
-                            document.getElementById('rightPanel').innerHTML += '<span id="sunInfo"></span>';
-                            document.getElementById('sunInfo').innerHTML += '<span id="sunrise">Sunrise is at ' + moonParse.sun_phase.sunrise.hour + ':' + moonParse.sun_phase.sunrise.minute + '</span><br>';
-                            document.getElementById('sunInfo').innerHTML += '<span id="sunset">Sunset is at ' + moonParse.sun_phase.sunset.hour + ':' + moonParse.sun_phase.sunset.minute + '</span><br>';
+                            document.getElementById('sunrise').innerHTML += 'Sunrise is at ' + moonParse.sun_phase.sunrise.hour + ':' + moonParse.sun_phase.sunrise.minute;
+                            document.getElementById('sunset').innerHTML += 'Sunset is at ' + moonParse.sun_phase.sunset.hour + ':' + moonParse.sun_phase.sunset.minute;
                             console.log(moonParse);
                         }
                     }
                 }
 
-
+                // RUN ALL INFO REQUESTS
                 getSkyInfo();
                 getPlanetsInfo();
                 getMoonInfo();
-
-                // DESKTOP VS MOBILE BEHAVIOUR
-                if ($(window).width() > 600) {
-                    $('#googleMap').animate({width:'40vw'}, 500);
-                    setTimeout(function() { $('.panel').slideDown(); }, 250);
-                }
             }
         }
     }
 });
-/* END INFO CONTROLLER */
+/* END SKY CONTROLLER */
 
 /* INFO CONTROLLER */
 spaceVis.controller('infoController', function($scope) {

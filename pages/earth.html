@@ -69,17 +69,82 @@ earthViewer.scene.screenSpaceCameraController.minimumZoomDistance = 10000;
 
 // ADD IMAGERY LAYER
 var earthLayers = earthViewer.imageryLayers;
-earthLayers.alpha = 0.5;
+earthLayers.alpha = 0.25;
 
+/*
 function getSatelliteImages() {
-    // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
-    //var locationArray = window.earth.getCenter();
+
+    var i = 0;
+
     var requestedLatitude = 55.9520600;
     var requestedLongitude = -3.1964800;
 
-    for (var i=-0.25; i<=-0.175; i+=0.025) {
+    setInterval(function() {
+        i++;
 
-        for (var j=-0.25; j<=-0.175; j+=0.025) {
+        var xoffset = (i % 20 - 10) / 40;
+        var yoffset = (i / 20 - 10) / 40;
+
+        var adjustedLatitude = (requestedLatitude + xoffset);
+        var adjustedLongitude = (requestedLongitude + yoffset);
+
+        // SET UP XML SEARCH REQUEST
+        var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + adjustedLongitude + "&lat=" + adjustedLatitude + "&cloud_score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+        var searchXml = new XMLHttpRequest();
+        searchXml.open('GET', searchUrl, true);
+
+        // SEND XML SEARCH REQUEST
+        searchXml.send(null);
+
+        function returnHandler(val, searchXml, adjustedLatitude, adjustedLongitude) {
+
+            // WHEN REQUEST IS READY, PARSE RESULTS
+            searchXml.onreadystatechange=function() {
+                if (searchXml.readyState==4 && searchXml.status==200) {
+                    var requestedLocation = JSON.parse(searchXml.responseText);
+
+                    console.log(adjustedLatitude, adjustedLongitude, requestedLocation.error);
+
+                    if (typeof requestedLocation.error == 'undefined') {
+
+                        earthLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+                            url: requestedLocation.url,
+                            rectangle: Cesium.Rectangle.fromDegrees((adjustedLongitude-.0125),(adjustedLatitude-.0125),(adjustedLongitude+.0125),(adjustedLatitude+.0125)),
+                            parameters: {
+                                transparent: 'true',
+                                format: 'image/png'
+                            },
+                        }));
+                    }
+                }
+            }
+        }
+        returnHandler(i, searchXml, adjustedLatitude, adjustedLongitude);
+    }, 1000);
+}
+*/
+
+
+function getSatelliteImages() {
+
+    function getCenterCoordinates() {
+        var windowPosition = new Cesium.Cartesian2(earthViewer.container.clientWidth / 2, earthViewer.container.clientHeight / 2);
+        var pickRay = earthViewer.scene.camera.getPickRay(windowPosition);
+        var pickPosition = earthViewer.scene.globe.pick(pickRay, earthViewer.scene);
+        var pickPositionCartographic = earthViewer.scene.globe.ellipsoid.cartesianToCartographic(pickPosition);
+        window.centerLatitude = Cesium.Math.toDegrees(pickPositionCartographic.latitude);
+        window.centerLongitude = Cesium.Math.toDegrees(pickPositionCartographic.longitude);
+        console.log(window.centerLatitude, window.centerLongitude);
+    }
+    getCenterCoordinates();
+
+    // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
+    var requestedLatitude = window.centerLatitude;
+    var requestedLongitude = window.centerLongitude;
+
+    for (var i=-0.025; i<=0; i+=0.025) {
+
+        for (var j=-0.025; j<=0; j+=0.025) {
 
             var adjustedLatitude = (requestedLatitude + i);
             var adjustedLongitude = (requestedLongitude + j);
@@ -99,10 +164,9 @@ function getSatelliteImages() {
                     if (searchXml.readyState==4 && searchXml.status==200) {
                         var requestedLocation = JSON.parse(searchXml.responseText);
 
-                        console.log(adjustedLatitude, adjustedLongitude, requestedLocation);
+                        console.log(adjustedLatitude, adjustedLongitude, requestedLocation.error);
 
-                        /*
-                        if (typeof requestedLocation.url != 'undefined') {
+                        if (typeof requestedLocation.error == 'undefined') {
 
                             earthLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
                                 url: requestedLocation.url,
@@ -113,7 +177,6 @@ function getSatelliteImages() {
                                 },
                             }));
                         }
-                        */
                     }
                 }
             }
@@ -121,87 +184,5 @@ function getSatelliteImages() {
         }
     }
 }
-
-
-
-
-/*
-
-// CREATE 3D EARTH AND GIVE IT A TILELAYER
-function initialiseEarth() {
-    window.earth = new WE.map('earth');
-    WE.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(window.earth);
-
-    // SET PARAMETERS
-    window.earth.setMinAltitude(10000);
-    window.earth.setMaxAltitude(100000000);
-}
-
-// INITIALISE EARTH WHEN DOM HAS LOADED
-$(document).ready(function() {
-    initialiseEarth();
-});
-
-// FETCH CURRENT LAT/LONG AND RETRIEVE MOST RECENT LANDSAT IMAGE
-function getSatelliteImage() {
-
-    // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
-    var locationArray = window.earth.getCenter();
-    var requestedLatitude = locationArray[0];
-    var requestedLongitude = locationArray[1];
-
-    for (var i=-0.25; i<=0.25; i+=0.025) {
-
-        // SET UP XML SEARCH REQUEST
-        var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + (requestedLongitude + i) + "&lat=" + (requestedLatitude + i) + "&cloud score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
-        var searchXml = new XMLHttpRequest();
-        searchXml.open('GET', searchUrl, true);
-
-        // SEND XML SEARCH REQUEST
-        searchXml.send(null);
-
-        function returnHandler(val, searchXml) {
-            console.log(val, searchXml);
-        // WHEN REQUEST IS READY, PARSE RESULTS
-            searchXml.onreadystatechange=function() {
-                if (searchXml.readyState==4 && searchXml.status==200) {
-                    var requestedLocation = JSON.parse(searchXml.responseText);
-
-
-                        var bounds = [[((requestedLatitude + i)),((requestedLongitude + i))], [((requestedLatitude + i)+.0000001),((requestedLongitude = i)+.0000001)]];
-
-                        newTile = L.imageOverlay(requestedLocation.url, {
-                            bounds: bounds,
-                            center: [(requestedLatitude + i),(requestedLongitude + i)],
-                            tileSize: 512,
-                            minZoom: 13,
-                            maxZoom: 13,
-                            opacity: 0.95
-                        });
-
-                        newTile.addTo(window.earth);
-
-
-                }
-            }
-        }
-        returnHandler(i, searchXml);
-    }
-}
-
-// REMOVE ALL INFO ATTRIBUTES AND CLEAR IMAGE URL
-function clearImage() {
-    $('#satelliteImage').empty();
-    $('#dateTaken').empty();
-    $('#imageLatitude').empty();
-    $('#imageLongitude').empty();
-    $('#satelliteImageContainer').addClass('hidden');
-    $('#imageInfo').addClass('hidden');
-}
-
-*/
-
 
 </script>
