@@ -38,6 +38,13 @@ spaceVis.config(function($routeProvider, $locationProvider) {
         })
         /* END ROUTE FOR SKY PAGE */
 
+        /* ROUTE FOR MARS PAGE */
+        .when('/mars', {
+            templateUrl : 'pages/mars.html',
+            controller  : 'marsController'
+        })
+        /* END ROUTE FOR MARS PAGE */
+
         /* ROUTE FOR INFO PAGE */
         .when('/info', {
             templateUrl : 'pages/info.html',
@@ -689,6 +696,16 @@ spaceVis.controller('skyController', function($scope) {
     }
 });
 /* END SKY CONTROLLER */
+
+/* INFO CONTROLLER */
+spaceVis.controller('marsController', function($scope) {
+
+    $scope.load = function() {
+
+    }
+
+});
+/* END INFO CONTROLLER */
 
 /* INFO CONTROLLER */
 spaceVis.controller('infoController', function($scope) {

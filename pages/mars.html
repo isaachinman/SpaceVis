@@ -1,0 +1,83 @@
+<!-- MARS PAGE -->
+
+<div data-ng-controller="marsController" data-ng-init="load();"></div>
+
+<div id="loader-container" class="absolute"><div id="spinner"></div></div>
+
+<div class="container">
+
+    <div id="marsContainer" class="row">
+
+        <div class="span12 text-center flex-container">
+
+            <h4>Current Weather on Mars</h4>
+
+            <div id="marsWeatherInfo">
+
+                Last Updated: <span id="terrestrialDate"></span><br>
+
+                Min Temp: <span id="minTemp"></span><br>
+
+                Max Temp: <span id="maxTemp"></span><br>
+
+                Pressure: <span id="pressure"></span><br>
+
+                Wind Speed: <span id="windSpeed"></span><br>
+
+                Wind Direction: <span id="windDirection"></span><br>
+
+                Atmospheric Opacity: <span id="atmosphericOpacity"></span><br>
+
+                Season: <span id="season"></span><br>
+
+                Sunrise: <span id="sunrise"></span><br>
+
+                Sunset: <span id="sunset"></span><br>
+
+            </div><!-- end marsWeatherInfo -->
+
+        </div><!-- end span12 -->
+
+    </div><!-- end row -->
+
+</div><!-- end container -->
+
+
+<script>
+
+// MONTH NAMES
+var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+// SET UP MARS CURRENT CONDITIONS REQUEST
+var marsUrl = 'http://crossorigin.me/http://marsweather.ingenology.com/v1/latest/';
+var marsXML = new XMLHttpRequest();
+marsXML.open('GET', marsUrl, true);
+
+// SEND REQUEST
+marsXML.send(null);
+
+// WHEN REQUEST IS READY
+marsXML.onreadystatechange=function() {
+    if (marsXML.readyState==4 && marsXML.status==200) {
+        var marsParse = JSON.parse(marsXML.responseText);
+        var marsReport = marsParse.report;
+        var lastUpdated = marsReport.terrestrial_date.split("-");
+        var marsMonth = parseInt(lastUpdated[1], 10);
+        console.log(marsMonth);
+        $('#terrestrialDate').text(monthNames[(parseInt(lastUpdated[1], 10))-1] + " " + parseInt(lastUpdated[2], 10) + ", " + lastUpdated[0]);
+        $('#minTemp').text(marsReport.min_temp + "c, " + marsReport.min_temp_fahrenheit + "f");
+        $('#maxTemp').text(marsReport.max_temp + "c, " + marsReport.max_temp_fahrenheit + "f");
+        $('#pressure').text(marsReport.pressure);
+        $('#windSpeed').text(marsReport.wind_speed);
+        $('#windDirection').text(marsReport.wind_direction);
+        $('#atmosphericOpacity').text(marsReport.atmo_opacity);
+        var marsMonth = (marsReport.season).replace("Month ", "");
+        $('#season').text(marsMonth + " (Earth Equivalent: " + monthNames[marsMonth-1] + ")");
+        $('#sunrise').text(marsReport.sunrise);
+        $('#sunset').text(marsReport.sunset);
+        console.log(marsParse);
+    }
+}
+
+
+</script>
