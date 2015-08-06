@@ -12,27 +12,27 @@
 
             <h4>Current Weather on Mars</h4>
 
-            <div id="marsWeatherInfo">
+            <div id="marsWeatherInfo" class="text-left">
 
-                Last Updated: <span id="terrestrialDate"></span><br>
+                Last Updated: <span id="terrestrialDate" class="pull-right"></span><br>
 
-                Min Temp: <span id="minTemp"></span><br>
+                Min Temp: <span id="minTemp" class="pull-right"></span><br>
 
-                Max Temp: <span id="maxTemp"></span><br>
+                Max Temp: <span id="maxTemp" class="pull-right"></span><br>
 
-                Pressure: <span id="pressure"></span><br>
+                Pressure: <span id="pressure" class="pull-right"></span><br>
 
-                Wind Speed: <span id="windSpeed"></span><br>
+                Wind Speed: <span id="windSpeed" class="pull-right"></span><br>
 
-                Wind Direction: <span id="windDirection"></span><br>
+                Wind Direction: <span id="windDirection" class="pull-right"></span><br>
 
-                Atmospheric Opacity: <span id="atmosphericOpacity"></span><br>
+                Atmospheric Opacity: <span id="atmosphericOpacity" class="pull-right"></span><br>
 
-                Season: <span id="season"></span><br>
+                Season: <span id="season" class="pull-right"></span><br>
 
-                Sunrise: <span id="sunrise"></span><br>
+                Sunrise: <span id="sunrise" class="pull-right"></span><br>
 
-                Sunset: <span id="sunset"></span><br>
+                Sunset: <span id="sunset" class="pull-right"></span><br>
 
             </div><!-- end marsWeatherInfo -->
 
@@ -42,42 +42,4 @@
 
 </div><!-- end container -->
 
-
-<script>
-
-// MONTH NAMES
-var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-// SET UP MARS CURRENT CONDITIONS REQUEST
-var marsUrl = 'http://crossorigin.me/http://marsweather.ingenology.com/v1/latest/';
-var marsXML = new XMLHttpRequest();
-marsXML.open('GET', marsUrl, true);
-
-// SEND REQUEST
-marsXML.send(null);
-
-// WHEN REQUEST IS READY
-marsXML.onreadystatechange=function() {
-    if (marsXML.readyState==4 && marsXML.status==200) {
-        var marsParse = JSON.parse(marsXML.responseText);
-        var marsReport = marsParse.report;
-        var lastUpdated = marsReport.terrestrial_date.split("-");
-        var marsMonth = parseInt(lastUpdated[1], 10);
-        console.log(marsMonth);
-        $('#terrestrialDate').text(monthNames[(parseInt(lastUpdated[1], 10))-1] + " " + parseInt(lastUpdated[2], 10) + ", " + lastUpdated[0]);
-        $('#minTemp').text(marsReport.min_temp + "c, " + marsReport.min_temp_fahrenheit + "f");
-        $('#maxTemp').text(marsReport.max_temp + "c, " + marsReport.max_temp_fahrenheit + "f");
-        $('#pressure').text(marsReport.pressure);
-        $('#windSpeed').text(marsReport.wind_speed);
-        $('#windDirection').text(marsReport.wind_direction);
-        $('#atmosphericOpacity').text(marsReport.atmo_opacity);
-        var marsMonth = (marsReport.season).replace("Month ", "");
-        $('#season').text(marsMonth + " (Earth Equivalent: " + monthNames[marsMonth-1] + ")");
-        $('#sunrise').text(marsReport.sunrise);
-        $('#sunset').text(marsReport.sunset);
-        console.log(marsParse);
-    }
-}
-
-
-</script>
+<!-- END MARS PAGE -->

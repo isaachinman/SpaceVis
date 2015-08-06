@@ -12,9 +12,27 @@
 
             <div id="skyContainer" class="flex-container">
 
+                <div id="googleMap" class="rounded-corners"></div>
+
                 <input id="pac-input"></input>
 
-                <div id="leftPanel" class="panel">
+                <button id="getMyLocation" onclick="getMyLocation();">Get My Location</button>
+
+                <div id="skyInfoContainer">
+
+                    <button id="getSkyCenter" onclick="getAllInfo();initialiseMapUI();">See What's Visible</button>
+
+                    <div id="skyMoreInfo" class="hidden infoContainer">
+
+                        <h4>Weather:</h4>
+
+                        <span>Over the course of the next hour it will be <span id="cloudMessage" class="dynamicText"></span>, with a cloud cover of <span id="cloudPercent" class="dynamicText"></span>%</span><br>
+
+                    </div><!-- end skyMoreInfo -->
+
+                </div><!-- end skyInfoContainer -->
+
+                <div id="leftPanel" class="panel leftPanel">
 
                     <h4>Planets</h4>
 
@@ -24,9 +42,7 @@
 
                 </div><!-- end leftPanel -->
 
-                <div id="googleMap" class="rounded-corners"></div>
-
-                <div id="rightPanel" class="panel">
+                <div id="rightPanel" class="panel rightPanel">
 
                     <h4>Sun & Moon</h4>
 
@@ -47,22 +63,6 @@
                     </span><!-- end sunInfo -->
 
                 </div><!-- end rightPanel -->
-
-                <button id="getMyLocation" onclick="getMyLocation();">Get My Location</button>
-
-                <div id="skyInfoContainer">
-
-                    <button id="getSkyCenter" onclick="getAllInfo();initialiseMapUI();">See What's Visible</button>
-
-                    <div id="skyMoreInfo" class="hidden infoContainer">
-
-                        <h4>Weather:</h4>
-
-                        <span>Over the course of the next hour it will be <span id="cloudMessage" class="dynamicText"></span>, with a cloud cover of <span id="cloudPercent" class="dynamicText"></span>%</span><br>
-
-                    </div><!-- end skyMoreInfo -->
-
-                </div><!-- end skyInfoContainer -->
 
             </div><!-- end skyContainer -->
 

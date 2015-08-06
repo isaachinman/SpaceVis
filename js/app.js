@@ -1,4 +1,4 @@
-/* PROTOTYPE DATA VISUALISATION APP: ISAAC HINMAN 2015 */
+/* SPACEVIS: ISAAC HINMAN 2015 */
 
 /* CREATE MODULE */
 var spaceVis = angular.module('prototype', ['ngRoute']);
@@ -8,13 +8,13 @@ var spaceVis = angular.module('prototype', ['ngRoute']);
 spaceVis.config(function($routeProvider, $locationProvider) {
     $routeProvider
 
-        /* ROUTE FOR STAR-FINDER PAGE */
+        /* ROUTE FOR STAR FINDER PAGE */
         .when('/', {
             templateUrl : 'pages/star-finder.html',
             controller  : 'starFinderController',
             activetab: 'home'
         })
-        /* END ROUTE FOR STAR-FINDER PAGE */
+        /* END ROUTE FOR STAR FINDER PAGE */
 
         /* ROUTE FOR EARTH PAGE */
         .when('/earth', {
@@ -48,7 +48,6 @@ spaceVis.config(function($routeProvider, $locationProvider) {
         /* ROUTE FOR INFO PAGE */
         .when('/info', {
             templateUrl : 'pages/info.html',
-            controller  : 'infoController'
         })
         /* END ROUTE FOR INFO PAGE */
 
@@ -62,10 +61,11 @@ spaceVis.controller('starFinderController', function($scope) {
 
     $scope.load = function() {
 
-        // CREATE RENDERER AND PUT IT INTO DOM ELEMENT
+        // CREATE THREEJS RENDERER AND DEFINE CANVAS
         var renderer = new THREE.WebGLRenderer({ alpha: true, canvas: canvas });
         var canvas = document.getElementById("canvas-container");
 
+        // IF WINDOW RESIZES, RESIZE RENDERER
         $(window).resize(function() {
             var width = (window.innerWidth * 0.8);
             var height = (window.innerHeight * 0.8);
@@ -73,8 +73,9 @@ spaceVis.controller('starFinderController', function($scope) {
         });
 
         // FORMULA FOR RADIUS: R=(L/(4*pi*s*T^4))^0.5
+        // UNUSED DUE TO LACK OF DEFINED LUMINOSITY VARIABLE
 
-        // SERIES OF FUNCTIONS TO TAKE 0-1 VALUE AND CONVERT TO COLOUR
+        // SERIES OF FUNCTIONS TO INTERPOLATE COLOUR
         // Adapted from: en.wikipedia.org/wiki/HSL_color_space
 
             // RGB TO HSL
@@ -100,7 +101,7 @@ spaceVis.controller('starFinderController', function($scope) {
             function hslToRgb(h, s, l){
                 var r, g, b;
                 if(s == 0){
-                    r = g = b = l; // achromatic
+                    r = g = b = l;
                 }else{
                     function hue2rgb(p, q, t){
                         if(t < 0) t += 1;
@@ -129,7 +130,7 @@ spaceVis.controller('starFinderController', function($scope) {
               for (var i=0;i<a.length;i++) c[i]+=(b[i]-a[i])*k;
               return c;
             }
-            var stones = [ // Your Data
+            var stones = [ // PREDETERMINED COLOUR STOPS
               {v:-.63, hex:'#9aafff'},
               {v:.165, hex:'#cad8ff'},
               {v:.33, hex:'#f7f7ff'},
@@ -152,8 +153,7 @@ spaceVis.controller('starFinderController', function($scope) {
               }
               throw "bad value";
             }
-        // END OF COLOUR FUNCTIONS //
-        /////////////////////////////
+        // END OF COLOUR FUNCTIONS
 
         // DERIVE TEMPERATURE FROM BV COLOUR VALUE
         // ADAPTED FROM: www.uni.edu/morgans/stars/b_v.html
@@ -186,7 +186,6 @@ spaceVis.controller('starFinderController', function($scope) {
         var width = (window.innerWidth * 0.8);
         var height = (window.innerHeight * 0.8);
 
-
         // CREATE SCENE
         var starScene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 1000 );
@@ -196,7 +195,7 @@ spaceVis.controller('starFinderController', function($scope) {
         camera.position.z = 5;
 
         // CREATE VARIOUS LIGHTING ELEMENTS
-        var light = new THREE.AmbientLight( 0x454545 ); // soft white light
+        var light = new THREE.AmbientLight( 0x454545 );
         starScene.add( light );
         directionalLight = new THREE.DirectionalLight( 0xffffff, 2.0 );
         directionalLight.position.set( 1, 1, 0.5 ).normalize();
@@ -227,9 +226,7 @@ spaceVis.controller('starFinderController', function($scope) {
             }
         }
 
-        ////////////////////////////////////////////////////
-        ////////////// MAIN SEARCH FUNCTION ////////////////
-        ////////////////////////////////////////////////////
+        // MAIN SEARCH FUNCTION
         window.searchRequest = function() {
 
             // ADD LOADER ANIMATION
@@ -338,7 +335,6 @@ spaceVis.controller('starFinderController', function($scope) {
             }
         }
     }
-
 });
 /* END STAR CONTROLLER */
 
@@ -347,6 +343,121 @@ spaceVis.controller('starFinderController', function($scope) {
 /*********************************************************/
 spaceVis.controller('earthController', function($scope) {
 
+    $scope.load = function() {
+
+        // START LOADER
+        $("#cesiumContainer").css("visibility", "hidden");
+        $("#spinner").addClass("loader");
+
+        // PLACEHOLDER FOR LACK OF LAZY LOAD FUNCTIONALITY IN CESIUM
+        setTimeout(function() {
+            $("#cesiumContainer").css("visibility", "visible");
+            $("#spinner").removeClass("loader");
+        }, 500);
+
+        // SET BING MAPS API KEY
+        Cesium.BingMapsApi.defaultKey = 'AlcBeUGZSauWjGDUGdGOI_-In-0ucLbGaX8KQqk1ig8gn2Va2DmjUH_qMnxhGLu1';
+
+        // CREATE VIEWER
+        var earthViewer = new Cesium.Viewer('cesiumContainer', {
+
+            animation: false,
+            timeline: false,
+            fullscreenButton: false,
+            infoBox: false,
+            sceneModePicker: false,
+            selectionModePicker: false,
+            selectionIndicator: false,
+            baseLayerPicker: false,
+            timeline: false,
+            navigationHelpButton: false,
+            navigationInstructionsInitiallyVisible: false,
+            skyBox: false,
+            skyAtmosphere: false,
+            creditContainer: "credits",
+
+            contextOptions : {
+                webgl: {
+                    alpha: true
+                }
+            }
+        });
+
+        // SET VIEWER BACKGROUND TO TRANSPARENT
+        earthViewer.scene.backgroundColor = Cesium.Color.TRANSPARENT;
+
+        // SET MIN AND MAX ZOOM LEVELS
+        earthViewer.scene.screenSpaceCameraController.maximumZoomDistance = 100000000;
+        earthViewer.scene.screenSpaceCameraController.minimumZoomDistance = 10000;
+
+        // ADD LANDSAT IMAGERY LAYER
+        var earthLayers = earthViewer.imageryLayers;
+        earthLayers.alpha = 0.25;
+
+        // DEFINE CAMERA
+        var camera = earthViewer.camera;
+
+        // GET SATELLITE IMAGES FUNCTION
+        window.getSatelliteImages = function() {
+
+            function getCenterCoordinates() {
+                var windowPosition = new Cesium.Cartesian2(earthViewer.container.clientWidth / 2, earthViewer.container.clientHeight / 2);
+                var pickRay = earthViewer.scene.camera.getPickRay(windowPosition);
+                var pickPosition = earthViewer.scene.globe.pick(pickRay, earthViewer.scene);
+                var pickPositionCartographic = earthViewer.scene.globe.ellipsoid.cartesianToCartographic(pickPosition);
+                window.centerLatitude = Cesium.Math.toDegrees(pickPositionCartographic.latitude);
+                window.centerLongitude = Cesium.Math.toDegrees(pickPositionCartographic.longitude);
+                console.log(window.centerLatitude, window.centerLongitude);
+            }
+            getCenterCoordinates();
+
+            // GET LATITUDE AND LONGITUDE OF CENTER OF MAP
+            var requestedLatitude = window.centerLatitude;
+            var requestedLongitude = window.centerLongitude;
+
+            for (var i=-0.025; i<=0; i+=0.025) {
+
+                for (var j=-0.025; j<=0; j+=0.025) {
+
+                    var adjustedLatitude = (requestedLatitude + i);
+                    var adjustedLongitude = (requestedLongitude + j);
+
+                    // SET UP XML SEARCH REQUEST
+                    var searchUrl = "https://api.nasa.gov/planetary/earth/imagery?lon=" + adjustedLongitude + "&lat=" + adjustedLatitude + "&cloud_score=True&api_key=5iF1Ge5myl5KDyqPuyZ1XxQyAMCNxbCt0dlR3M7R";
+                    var searchXml = new XMLHttpRequest();
+                    searchXml.open('GET', searchUrl, true);
+
+                    // SEND XML SEARCH REQUEST
+                    searchXml.send(null);
+
+                    function returnHandler(val, searchXml, adjustedLatitude, adjustedLongitude) {
+
+                        // WHEN REQUEST IS READY, PARSE RESULTS
+                        searchXml.onreadystatechange=function() {
+                            if (searchXml.readyState==4 && searchXml.status==200) {
+                                var requestedLocation = JSON.parse(searchXml.responseText);
+
+                                console.log(adjustedLatitude, adjustedLongitude, requestedLocation.error);
+
+                                if (typeof requestedLocation.error == 'undefined') {
+
+                                    earthLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+                                        url: requestedLocation.url,
+                                        rectangle: Cesium.Rectangle.fromDegrees((adjustedLongitude-.0125),(adjustedLatitude-.0125),(adjustedLongitude+.0125),(adjustedLatitude+.0125)),
+                                        parameters: {
+                                            transparent: 'true',
+                                            format: 'image/png'
+                                        },
+                                    }));
+                                }
+                            }
+                        }
+                    }
+                    returnHandler(i, searchXml, adjustedLatitude, adjustedLongitude);
+                }
+            }
+        }
+    }
 });
 /*END EARTH CONTROLLER */
 
@@ -357,6 +468,7 @@ spaceVis.controller('apodController', function($scope) {
 
     $scope.load = function() {
 
+        // TOGGLE INFO SECTION FUNCTION
         window.toggleApodInfo = function() {
             $("#lightSlider > li.active > div.infoContainer").slideToggle();
         }
@@ -364,12 +476,13 @@ spaceVis.controller('apodController', function($scope) {
         // MONTH NAMES
         var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-        // SLIDE ARRAY
+        // CREATE SLIDE ARRAY
         window.imgIds = [];
 
         // GENERATE SLIDES FUNCTION
         function generateSlides() {
 
+            // EVERY TIME FUNCTION IS RUN, ADD 10 NEW SLIDES
             var stopGeneratingSlides = (window.imgIds.length + 10);
 
             var startLength = (window.imgIds.length + 1);
@@ -406,48 +519,47 @@ spaceVis.controller('apodController', function($scope) {
                     }
                 }
 
-                    slideSetUp(
-                        (function(i, day, monthName, year) {
-                            return function(result) {
+                slideSetUp(
+                    (function(i, day, monthName, year) {
+                        return function(result) {
 
-                                var mediaType = result.media_type;
+                            var mediaType = result.media_type;
 
-                                function createDOM() {
-                                    // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
-                                    if (mediaType == "image") {
-                                        document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
-                                    } else if (mediaType == "video") {
-                                        document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
-                                    }
-                                }
-
-                                function fillDOM() {
-                                    // GENERATE DATE
-                                    var date = new Date();
-                                    date.setDate(date.getDate() - (i-1));
-                                    var day = date.getDate();
-                                    var monthName = date.getMonth();
-                                    var year = date.getFullYear();
-                                    document.getElementById('apod'+i).src = result.url;
-                                    document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
-                                    document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
-                                    document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
-                                }
-
-                                createDOM();
-                                fillDOM();
-
-                                // END LOADER ANIMATION ON INITIAL LOAD
-                                if (i == (stopGeneratingSlides-1) && $("#spinner").hasClass("loader")) {
-                                    $("#spinner").removeClass("loader");
-                                    document.getElementById('apodContainer').style.visibility = "visible";
+                            function createDOM() {
+                                // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
+                                if (mediaType == "image") {
+                                    document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
+                                } else if (mediaType == "video") {
+                                    document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
                                 }
                             }
-                        })(i)
-                    );
+
+                            function fillDOM() {
+                                // GENERATE DATE
+                                var date = new Date();
+                                date.setDate(date.getDate() - (i-1));
+                                var day = date.getDate();
+                                var monthName = date.getMonth();
+                                var year = date.getFullYear();
+                                document.getElementById('apod'+i).src = result.url;
+                                document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
+                                document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
+                                document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
+                            }
+
+                            createDOM();
+                            fillDOM();
+
+                            // END LOADER ANIMATION ON INITIAL LOAD
+                            if (i == (stopGeneratingSlides-1) && $("#spinner").hasClass("loader")) {
+                                $("#spinner").removeClass("loader");
+                                document.getElementById('apodContainer').style.visibility = "visible";
+                            }
+                        }
+                    })(i)
+                );
             }
         }
-
         generateSlides();
 
         // SET UP SLIDER
@@ -484,16 +596,21 @@ spaceVis.controller('apodController', function($scope) {
 });
 /* END APOD CONTROLLER */
 
-/* SKY CONTROLLER */
+/*********************************************************/
+/******************** SKY CONTROLLER *********************/
+/*********************************************************/
 spaceVis.controller('skyController', function($scope) {
 
     $scope.load = function() {
 
+        // INITIATE LOADER
         document.getElementById('skyContainer').style.visibility = "hidden";
         $("#spinner").addClass("loader");
 
+        // DEFINE MAP AND GEOMARKER
         var map, GeoMarker;
 
+        // INTIALISE MAP
         function initialize() {
 
             var mapOptions = {
@@ -565,6 +682,7 @@ spaceVis.controller('skyController', function($scope) {
             });
         }
 
+        // GEOLOCATION FUNCTION
         window.getMyLocation = function() {
 
             GeoMarker = new GeolocationMarker();
@@ -586,7 +704,7 @@ spaceVis.controller('skyController', function($scope) {
 
         window.initialiseMapUI = function() {
 
-            // DESKTOP VS MOBILE BEHAVIOUR
+            // DESKTOP BEHAVIOUR
             if ($(window).width() > 600) {
 
                 // RESIZE GOOGLE MAP
@@ -600,6 +718,28 @@ spaceVis.controller('skyController', function($scope) {
                     var currentMarkerPosition = window.marker.getPosition();
                     google.maps.event.trigger(map, "resize");
                     map.panTo(currentMarkerPosition); }, 500);
+
+            }
+
+            // MOBILE BEHAVIOUR
+            else if ($(window).width() <= 600) {
+
+                // CHANGE PANEL BEHAVIOUR
+                $('#leftPanel').removeClass('leftPanel');
+                $('#rightPanel').removeClass('rightPanel');
+                $('#leftPanel').removeClass('panel');
+                $('#rightPanel').removeClass('panel');
+
+
+                // SLIDE OUT INFO PANELS
+                setTimeout(function() { $('.panel').slideDown(); }, 250);
+
+                // WAIT UNTIL MAP HAS RESIZED AND PAN BACK TO MARKER
+                setTimeout(function() {
+                    var currentMarkerPosition = window.marker.getPosition();
+                    google.maps.event.trigger(map, "resize");
+                    map.panTo(currentMarkerPosition); }, 500);
+
             }
         }
 
@@ -607,14 +747,15 @@ spaceVis.controller('skyController', function($scope) {
 
             // GET AND SET CURRENT LOCATION VARS
             var currentLocation = map.getCenter();
-            var currentLocationLat = currentLocation.A;
-            var currentLocationLong = currentLocation.F;
+            console.log(currentLocation);
+            var currentLocationLat = currentLocation.G;
+            var currentLocationLong = currentLocation.K;
             console.log(currentLocationLat);
             console.log(currentLocationLong);
 
             // DON'T RUN FUNCTION IF AT DEFAULT GLOBE VIEW
             if (currentLocationLat == 0 && currentLocationLong == 0) {
-                alert("Please choose a valid location")
+                alert("Please choose a specific location")
             } else {
 
                 // SET VAR TO INDICATE FUNCTION HAS RUN ONCE
@@ -631,6 +772,7 @@ spaceVis.controller('skyController', function($scope) {
                     skyXML.onreadystatechange=function() {
                         if (skyXML.readyState==4 && skyXML.status==200) {
                             var skyParse = JSON.parse(skyXML.responseText);
+                            console.log(skyParse);
                             var cloudiness = skyParse.hourly_forecast[0].sky;
                             var visibilityMessage = (skyParse.hourly_forecast[0].condition).toLowerCase();
                             document.getElementById('cloudMessage').innerHTML = visibilityMessage;
@@ -697,23 +839,53 @@ spaceVis.controller('skyController', function($scope) {
 });
 /* END SKY CONTROLLER */
 
-/* INFO CONTROLLER */
+/*********************************************************/
+/******************** MARS CONTROLLER ********************/
+/*********************************************************/
 spaceVis.controller('marsController', function($scope) {
 
     $scope.load = function() {
 
+        // MONTH NAMES
+        var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        // SET UP MARS CURRENT CONDITIONS REQUEST
+        var marsUrl = 'http://crossorigin.me/http://marsweather.ingenology.com/v1/latest/';
+        var marsXML = new XMLHttpRequest();
+        marsXML.open('GET', marsUrl, true);
+
+        // SEND REQUEST
+        marsXML.send(null);
+
+        // WHEN REQUEST IS READY
+        marsXML.onreadystatechange=function() {
+            if (marsXML.readyState==4 && marsXML.status==200) {
+                var marsParse = JSON.parse(marsXML.responseText);
+                var marsReport = marsParse.report;
+                var lastUpdated = marsReport.terrestrial_date.split("-");
+                var marsMonth = parseInt(lastUpdated[1], 10);
+                console.log(marsMonth);
+                $('#terrestrialDate').text(monthNames[(parseInt(lastUpdated[1], 10))-1] + " " + parseInt(lastUpdated[2], 10) + ", " + lastUpdated[0]);
+                $('#minTemp').text(marsReport.min_temp + "c, " + marsReport.min_temp_fahrenheit + "f");
+                $('#maxTemp').text(marsReport.max_temp + "c, " + marsReport.max_temp_fahrenheit + "f");
+                $('#pressure').text(marsReport.pressure);
+                $('#windSpeed').text(marsReport.wind_speed);
+                $('#windDirection').text(marsReport.wind_direction);
+                $('#atmosphericOpacity').text(marsReport.atmo_opacity);
+                var marsMonth = (marsReport.season).replace("Month ", "");
+                $('#season').text(marsMonth + " (Earth Equivalent: " + monthNames[marsMonth-1] + ")");
+                $('#sunrise').text(marsReport.sunrise);
+                $('#sunset').text(marsReport.sunset);
+                console.log(marsParse);
+            }
+        }
     }
-
 });
-/* END INFO CONTROLLER */
+/* END MARS CONTROLLER */
 
-/* INFO CONTROLLER */
-spaceVis.controller('infoController', function($scope) {
-
-});
-/* END INFO CONTROLLER */
-
-/* NAV CONTROLLER */
+/*********************************************************/
+/******************** NAV CONTROLLER *********************/
+/*********************************************************/
 spaceVis.controller('navController', function($scope, $location) {
     $scope.isActive = function(route) {
         return route === $location.path();
