@@ -260,7 +260,7 @@ spaceVis.controller('starFinderController', function($scope) {
 
                     // IF STAR IS THE SUN, GET TEXTURE, ELSE SMOOTH MESH
                     if (window.specificStar.label === "Sun") {
-                        var sunTexture = THREE.ImageUtils.loadTexture( "img/sun.jpg" );
+                        var sunTexture = THREE.ImageUtils.loadTexture( "img/sun.gif" );
                         sunTexture.wrapS = THREE.ClampToEdgeWrapping;
                         sunTexture.wrapT = THREE.ClampToEdgeWrapping;
                         sunTexture.minFilter = THREE.NearestFilter;
@@ -527,7 +527,7 @@ spaceVis.controller('apodController', function($scope) {
 
                             function createDOM() {
                                 // IF IMAGE, CREATE IMG; IF VIDEO, CREATE IFRAME
-                                if (mediaType == "image") {
+                                if (mediaType == "image" && window.location.href.indexOf("apod") > -1) {
                                     document.getElementById("apodLi"+i).innerHTML += '<img id="apod' + i + '" class="rounded-corners apod-image"><br><span id="apod' + i + 'Date" class="half-opacity-text"></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
                                 } else if (mediaType == "video") {
                                     document.getElementById("apodLi"+i).innerHTML += '<iframe id="apod' + i + '" class="apod-video" frameBorder="0"></iframe><br><span id="apod' + i + 'Date" class="half-opacity-text"></span></span><div id="apod' + i + 'InfoContainer" class="infoContainer half-opacity-text rounded-corners" style="display:none"><span id="apod' + i + 'Title" class="block"></span><span id="apod' + i + 'Explanation"></span></div>';
@@ -535,16 +535,18 @@ spaceVis.controller('apodController', function($scope) {
                             }
 
                             function fillDOM() {
-                                // GENERATE DATE
-                                var date = new Date();
-                                date.setDate(date.getDate() - (i-1));
-                                var day = date.getDate();
-                                var monthName = date.getMonth();
-                                var year = date.getFullYear();
-                                document.getElementById('apod'+i).src = result.url;
-                                document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
-                                document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
-                                document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
+                                if (window.location.href.indexOf("apod") > -1) {
+                                    // GENERATE DATE
+                                    var date = new Date();
+                                    date.setDate(date.getDate() - (i-1));
+                                    var day = date.getDate();
+                                    var monthName = date.getMonth();
+                                    var year = date.getFullYear();
+                                    document.getElementById('apod'+i).src = result.url;
+                                    document.getElementById('apod'+i+"Date").innerHTML = "<h4>" + day + " " + monthNames[monthName] + " " + year + "</h4>";
+                                    document.getElementById('apod' + i + 'Title').innerHTML = '<h5>Title: "' + result.title + '"</h5>';
+                                    document.getElementById('apod' + i + 'Explanation').innerHTML = result.explanation;
+                                }
                             }
 
                             createDOM();

@@ -4,6 +4,13 @@
 <html lang="en" data-ng-app="prototype">
 <head>
 
+    <title>SpaceVis</title>
+    <meta name="author" content="Isaac Hinman">
+
+    <!-- META VIEWPORT -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!-- END META VIEWPORT -->
+
     <!-- LOAD JQUERY -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- END LOAD JQUERY -->
@@ -20,12 +27,11 @@
 
     <!-- ADDITIONAL CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" type="image/png" href="img/favicon.png">
     <!-- END ADDITIONAL CSS -->
 
     <!-- LOAD THREEJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
-    <script src="js/controls/trackball-controls.js"></script>
-    <script src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js"></script>
     <!-- END LOAD THREEJS -->
 
     <!-- SEARCH AUTOCOMPLETE -->
@@ -35,7 +41,7 @@
 
     <!-- LOAD CESIUM -->
     <link rel="stylesheet" href="js/Widgets/widgets.css">
-    <script src="js/Cesium.js"></script>
+    <script async src="js/Cesium.js"></script>
     <!-- END LOAD CESIUM -->
 
     <!-- LOAD PHOTO SLIDER -->
@@ -72,8 +78,8 @@
                     <li data-ng-class="{active:isActive('/')}"><a href="#/">StarFinder</a></li>
                     <li data-ng-class="{active:isActive('/earth')}"><a href="#/earth">Landsat</a></li>
                     <li data-ng-class="{active:isActive('/apod')}"><a href="#/apod">APOD</a></li>
-                    <li data-ng-class="{active:isActive('/sky')}"><a href="#/sky">Sky</a></li>
-                    <li data-ng-class="{active:isActive('/mars')}"><a href="#/mars">Mars</a></li>
+                    <li data-ng-class="{active:isActive('/sky')}"><a href="#/sky">SkyFinder</a></li>
+                    <li data-ng-class="{active:isActive('/mars')}"><a href="#/mars">MarsWeather</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="#/info">Information</a></li>
@@ -97,8 +103,8 @@
 <div class="background-gradient"></div><!-- end background-gradient -->
 
 <script>
-// DISABLE ALL SUPERFLUOUS CONSOLE LOGGING (PRIMARILY THREEJS DEFAULT BEHAVIOUR AND DEBUGGING)
-//console.log = function() {}
+// DISABLE ALL SUPERFLUOUS CONSOLE LOGGING (PRIMARILY THREEJS DEFAULT BEHAVIOUR AND CUSTOM DEBUGGING)
+console.log = function() {}
 </script>
 
 </body>
