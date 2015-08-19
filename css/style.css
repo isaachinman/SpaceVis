@@ -190,6 +190,18 @@ iframe {
 }
 /* END MARS CSS */
 
+/* INFO CSS */
+#license {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+/* END INFO CSS */
+
 /********************************
 ********* LOADER CSS ************
 ********************************/
